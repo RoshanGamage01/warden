@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Warden — Internal Process Manager</title>
+  <style>
+  @page { margin: 18mm 16mm; size: A4; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: #1a1a1a;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    font-size: 22pt;
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 0.35em;
+    margin-top: 0;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-size: 14pt;
+    color: #1e40af;
+    margin-top: 1.4em;
+    border-bottom: 1px solid #dbeafe;
+    padding-bottom: 0.2em;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11.5pt;
+    color: #334155;
+    margin-top: 1.1em;
+    page-break-after: avoid;
+  }
+  p, li { orphans: 3; widows: 3; }
+  a { color: #2563eb; text-decoration: none; }
+  code {
+    font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    font-size: 0.88em;
+    background: #f1f5f9;
+    padding: 0.12em 0.35em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 0.85em 1em;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    page-break-inside: avoid;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8em 0 1.2em;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 0.4em 0.55em;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #eff6ff;
+    font-weight: 600;
+    color: #1e3a8a;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+  hr {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 1.5em 0;
+  }
+  ul, ol { padding-left: 1.4em; }
+  li { margin: 0.25em 0; }
+  .doc-section {
+    page-break-before: always;
+  }
+  .doc-section:first-child {
+    page-break-before: auto;
+  }
+  .cover {
+    text-align: center;
+    padding: 3em 1em 2em;
+    page-break-after: always;
+  }
+  .cover h1 {
+    border: none;
+    font-size: 28pt;
+    margin-bottom: 0.2em;
+  }
+  .cover p {
+    color: #64748b;
+    font-size: 12pt;
+  }
+  .toc {
+    page-break-after: always;
+    margin-bottom: 2em;
+  }
+  .toc h2 { border: none; }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { margin: 0.5em 0; font-size: 11pt; }
+  .footer-note {
+    margin-top: 2em;
+    padding-top: 0.8em;
+    border-top: 1px solid #e2e8f0;
+    font-size: 8.5pt;
+    color: #64748b;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class=""><h1>Warden — Internal Process Manager</h1>
+<p>A self-hosted, PM2-equivalent process manager built in TypeScript for Node 18+.<br>Manages <strong>any</strong> process (Node.js, Python, Ruby, binaries, shell scripts) with the full PM2 feature set and first-class telemetry.</p>
+<h2>Features</h2>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Feature</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Process modes</strong></td>
+<td>Fork mode (any process), Node.js Cluster mode (multi-instance, port-sharing)</td>
+</tr>
+<tr>
+<td><strong>Auto-restart</strong></td>
+<td>Crash detection, exponential backoff, <code>max_restarts</code>, <code>min_uptime</code> stability gate</td>
+</tr>
+<tr>
+<td><strong>Zero-downtime reload</strong></td>
+<td>Rolling reload for cluster apps (<code>warden reload</code>)</td>
+</tr>
+<tr>
+<td><strong>Scale</strong></td>
+<td><code>warden scale &lt;name&gt; &lt;n&gt;</code> — add/remove cluster workers at runtime</td>
+</tr>
+<tr>
+<td><strong>Watch</strong></td>
+<td>File-system watch triggers reload (<code>--watch</code>)</td>
+</tr>
+<tr>
+<td><strong>Cron restart</strong></td>
+<td>Scheduled restarts via cron expression (<code>--cron &quot;0 0 * * *&quot;</code>)</td>
+</tr>
+<tr>
+<td><strong>Memory limit</strong></td>
+<td>Auto-restart on memory threshold (<code>--max-memory-restart 150M</code>)</td>
+</tr>
+<tr>
+<td><strong>Log management</strong></td>
+<td>Per-process stdout/stderr files, rotation, streaming via <code>warden logs</code></td>
+</tr>
+<tr>
+<td><strong>Persistence</strong></td>
+<td><code>warden save</code> / <code>warden resurrect</code> with <code>~/.warden/dump.json</code></td>
+</tr>
+<tr>
+<td><strong>Startup</strong></td>
+<td>Generate systemd / launchd service via <code>warden startup</code></td>
+</tr>
+<tr>
+<td><strong>Ecosystem config</strong></td>
+<td>Declare multiple apps in <code>ecosystem.config.js</code> / <code>.json</code></td>
+</tr>
+<tr>
+<td><strong>Live dashboard</strong></td>
+<td><code>warden monit</code> — auto-refreshing terminal table</td>
+</tr>
+<tr>
+<td><strong>HTTP API</strong></td>
+<td><code>GET /processes</code>, <code>/summary</code>, <code>/processes/:id/metrics</code></td>
+</tr>
+<tr>
+<td><strong>Prometheus</strong></td>
+<td><code>GET /metrics</code> endpoint (prom-client gauges/counters)</td>
+</tr>
+<tr>
+<td><strong>Telemetry</strong></td>
+<td>SQLite time-series, 24-hour retention, 5-second sampling</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Installation</h2>
+<pre><code class="language-bash"># From npm (global CLI):
+npm install -g @roshan-gamage/warden
+
+# From source:
+git clone https://github.com/RoshanGamage01/warden.git
+cd warden
+npm install
+npm run build
+npm link   # optional: link `warden` globally
+</code></pre>
+<p>The <code>warden</code> binary is at <code>./dist/bin/warden.js</code> after build.</p>
+<p><strong>Linux (Ubuntu/Debian):</strong> Prebuilt binaries are included for Node 20–24. If install still compiles from source and fails with <code>not found: make</code>, install build tools first:</p>
+<pre><code class="language-bash">sudo apt-get update &amp;&amp; sudo apt-get install -y build-essential python3
+</code></pre>
+<hr>
+<h2>Quick start</h2>
+<pre><code class="language-bash"># Start any Node script directly
+warden start ./server.js --name api
+
+# Start a Python script
+warden start ./worker.py --interpreter python3 --name worker
+
+# Start with 4 cluster instances (Node.js only, port-sharing)
+warden start ./app.js --instances 4 --name app
+
+# Use an ecosystem config (ecosystem.config.js, warden.config.json, or *.config.js)
+warden start ecosystem.config.js
+
+# List all processes
+warden list
+
+# Stream logs
+warden logs           # all processes
+warden logs api       # by name
+warden logs 0         # by id
+
+# Live dashboard
+warden monit
+</code></pre>
+<hr>
+<h2>CLI Reference</h2>
+<h3>Process management</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>warden start &lt;script&gt;</code></td>
+<td>Start a process (<code>.js</code>, <code>.py</code>, binaries, etc.)</td>
+</tr>
+<tr>
+<td><code>warden start &lt;ecosystem.config.js&gt;</code></td>
+<td>Start all apps in an ecosystem config</td>
+</tr>
+<tr>
+<td><code>warden stop &lt;id|name&gt;</code></td>
+<td>Stop a process</td>
+</tr>
+<tr>
+<td><code>warden restart &lt;id|name&gt;</code></td>
+<td>Restart a process</td>
+</tr>
+<tr>
+<td><code>warden reload &lt;id|name&gt;</code></td>
+<td>Zero-downtime reload (cluster) or graceful restart (fork)</td>
+</tr>
+<tr>
+<td><code>warden delete &lt;id|name&gt;</code></td>
+<td>Stop and remove from registry</td>
+</tr>
+<tr>
+<td><code>warden scale &lt;id|name&gt; &lt;n&gt;</code></td>
+<td>Scale cluster app to N workers</td>
+</tr>
+<tr>
+<td><code>warden reset &lt;id|name&gt;</code></td>
+<td>Reset restart counters</td>
+</tr>
+</tbody></table>
+<h3>Inspection</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>warden list</code> / <code>warden ls</code></td>
+<td>Process table with CPU/mem/uptime</td>
+</tr>
+<tr>
+<td><code>warden describe &lt;id|name&gt;</code></td>
+<td>Full process detail including cluster workers</td>
+</tr>
+<tr>
+<td><code>warden monit</code></td>
+<td>Live refreshing dashboard (Ctrl+C to quit)</td>
+</tr>
+<tr>
+<td><code>warden ping</code></td>
+<td>Check daemon status</td>
+</tr>
+</tbody></table>
+<h3>Logs</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>warden logs [id]</code></td>
+<td>Stream logs (Ctrl+C to stop)</td>
+</tr>
+<tr>
+<td><code>warden logs -n 50 [id]</code></td>
+<td>Show last 50 historical lines then stream</td>
+</tr>
+<tr>
+<td><code>warden flush [id]</code></td>
+<td>Truncate log files</td>
+</tr>
+</tbody></table>
+<h3>Persistence &amp; startup</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>warden save</code></td>
+<td>Write current process list to <code>~/.warden/dump.json</code></td>
+</tr>
+<tr>
+<td><code>warden resurrect</code></td>
+<td>Start all saved processes</td>
+</tr>
+<tr>
+<td><code>warden startup [platform]</code></td>
+<td>Install system startup service (auto, systemd, launchd)</td>
+</tr>
+<tr>
+<td><code>warden unstartup [platform]</code></td>
+<td>Remove startup service</td>
+</tr>
+</tbody></table>
+<h3>Daemon</h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>warden kill</code></td>
+<td>Gracefully stop all processes and the daemon</td>
+</tr>
+</tbody></table>
+<hr>
+<h2><code>start</code> options</h2>
+<pre><code>-n, --name &lt;name&gt;               App name (defaults to script filename)
+-i, --instances &lt;n|max&gt;         Number of instances; &quot;max&quot; uses all CPUs
+    --exec-mode &lt;fork|cluster&gt;  Execution mode (auto-set to cluster if -i &gt; 1)
+    --interpreter &lt;binary&gt;      Interpreter (e.g. python3, ruby)
+    --node-args &lt;args&gt;          Extra Node.js args
+    --cwd &lt;dir&gt;                 Working directory
+-e, --env &lt;KEY=VAL&gt;             Environment variable (repeatable)
+    --watch                     Restart on file changes
+    --max-memory-restart &lt;size&gt; Restart threshold (e.g. 150M, 1G)
+    --cron &lt;expr&gt;               Scheduled restart (cron expression)
+    --max-restarts &lt;n&gt;          Max crash-restart attempts (default 16)
+    --min-uptime &lt;time&gt;         Stability gate (e.g. 1s, 500ms)
+    --restart-delay &lt;ms&gt;        Delay between restarts
+    --no-auto-restart           Disable crash auto-restart
+    --merge-logs                Merge stdout and stderr into one file
+    --kill-timeout &lt;ms&gt;         Graceful shutdown timeout
+</code></pre>
+<hr>
+<h2>Ecosystem config</h2>
+<pre><code class="language-js">// ecosystem.config.js
+module.exports = {
+  apps: [
+    {
+      name: &#39;api&#39;,
+      script: &#39;./src/api.js&#39;,
+      instances: 2,
+      exec_mode: &#39;cluster&#39;,
+      env: { NODE_ENV: &#39;production&#39;, PORT: &#39;3000&#39; },
+      max_memory_restart: &#39;500M&#39;,
+    },
+    {
+      name: &#39;worker&#39;,
+      script: &#39;./src/worker.js&#39;,
+      watch: [&#39;./src&#39;],
+      ignore_watch: [&#39;node_modules&#39;],
+      cron_restart: &#39;0 3 * * *&#39;,  // restart daily at 3am
+    },
+    {
+      name: &#39;ml-model&#39;,
+      script: &#39;./predict.py&#39;,
+      interpreter: &#39;python3&#39;,
+      autorestart: true,
+      max_restarts: 5,
+    },
+  ],
+};
+</code></pre>
+<pre><code class="language-bash">warden start ecosystem.config.js
+</code></pre>
+<hr>
+<h2>HTTP API</h2>
+<p>Runs on <code>http://127.0.0.1:9615</code> by default.</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>GET /health</code></td>
+<td><code>{ status: &#39;ok&#39;, pid }</code></td>
+</tr>
+<tr>
+<td><code>GET /processes</code></td>
+<td>All processes with latest CPU/mem</td>
+</tr>
+<tr>
+<td><code>GET /processes/:id</code></td>
+<td>Single process + 120 recent metric points</td>
+</tr>
+<tr>
+<td><code>GET /processes/:id/metrics?range=1h</code></td>
+<td>Time-series data (range: <code>1h</code>, <code>6h</code>, <code>24h</code>, <code>7d</code>)</td>
+</tr>
+<tr>
+<td><code>GET /summary</code></td>
+<td>Aggregate totals (online, stopped, errored, CPU, memory)</td>
+</tr>
+<tr>
+<td><code>GET /metrics</code></td>
+<td>Prometheus exposition format</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Prometheus / Grafana</h2>
+<p>Point your Prometheus scrape config at <code>http://127.0.0.1:9615/metrics</code>:</p>
+<pre><code class="language-yaml"># prometheus.yml
+scrape_configs:
+  - job_name: warden
+    static_configs:
+      - targets: [&#39;127.0.0.1:9615&#39;]
+</code></pre>
+<p>Available metrics:</p>
+<ul>
+<li><code>warden_process_cpu_percent{warden_id, name}</code></li>
+<li><code>warden_process_memory_bytes{warden_id, name}</code></li>
+<li><code>warden_process_restarts_total{warden_id, name}</code></li>
+<li><code>warden_process_uptime_seconds{warden_id, name}</code></li>
+<li><code>warden_process_online{warden_id, name, status}</code></li>
+<li>Standard Node.js process metrics via <code>prom-client</code></li>
+</ul>
+<hr>
+<h2>File locations</h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>~/.warden/daemon.sock</code></td>
+<td>Unix domain socket (IPC)</td>
+</tr>
+<tr>
+<td><code>~/.warden/daemon.pid</code></td>
+<td>Daemon PID file</td>
+</tr>
+<tr>
+<td><code>~/.warden/dump.json</code></td>
+<td>Saved process list</td>
+</tr>
+<tr>
+<td><code>~/.warden/metrics.db</code></td>
+<td>SQLite metrics database (24-hour rolling window)</td>
+</tr>
+<tr>
+<td><code>~/.warden/logs/&lt;name&gt;-&lt;id&gt;/out.log</code></td>
+<td>Stdout log</td>
+</tr>
+<tr>
+<td><code>~/.warden/logs/&lt;name&gt;-&lt;id&gt;/err.log</code></td>
+<td>Stderr log</td>
+</tr>
+<tr>
+<td><code>~/.warden/logs/&lt;name&gt;-&lt;id&gt;/out.log.1</code></td>
+<td>Rotated log (up to 5 backups)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Architecture overview</h2>
+<pre><code>CLI (warden)
+  │  JSON-RPC over Unix domain socket
+  ▼
+Daemon (God process)
+  ├─ IPC Server          — RPC request router
+  ├─ AppRegistry         — Registry of all managed apps
+  │    ├─ ProcessSupervisor  — fork-mode lifecycle, backoff, log piping
+  │    └─ ClusterManager    — fork(cluster/master.js) → N workers
+  ├─ WatchManager        — chokidar → restart
+  ├─ CronScheduler       — croner → restart
+  ├─ MemoryMonitor       — pidusage → restart on threshold
+  ├─ MetricsSampler      — pidusage every 5s → SQLite
+  ├─ LogRotator          — size-based rotation every 60s
+  └─ HTTP API (Fastify)  — /processes, /metrics (Prometheus)
+</code></pre>
+<h3>Daemon bootstrap</h3>
+<ol>
+<li>CLI checks if <code>~/.warden/daemon.sock</code> is connectable</li>
+<li>If not, spawns daemon detached: <code>node dist/daemon/index.js</code></li>
+<li>CLI polls socket every 100 ms (max 5 s) for readiness</li>
+<li>CLI connects and sends JSON-RPC</li>
+</ol>
+<h3>IPC framing</h3>
+<pre><code>[4-byte BE uint32: body length] [UTF-8 JSON payload]
+</code></pre>
+<p>Handles TCP fragmentation and multiple messages per chunk.</p>
+<h3>Process state machine</h3>
+<pre><code> [*] ──► launching ──► online ──► stopping ──► stopped
+                │         │                       │
+                │         └──► launching (crash)  │
+                │         └──► errored (exceeded) │
+                └───────────────────────────────► [start]
+</code></pre>
+<hr>
+<h2>Development</h2>
+<pre><code class="language-bash">npm run dev     # watch mode build
+npm test        # unit tests
+npm run test:watch  # watch mode
+
+# Run integration tests (starts/stops real daemon)
+npm test        # integration tests are auto-run (uses isolated ~/.warden)
+
+# Skip integration tests
+SKIP_INTEGRATION=1 npm test
+</code></pre>
+<hr>
+<h2>Windows support</h2>
+<p>On Windows, the Unix domain socket path is replaced with a named pipe (<code>\\.\pipe\warden-daemon</code>). All other functionality is identical. The <code>pidusage</code> and <code>better-sqlite3</code> packages are cross-platform. If prebuilt binaries are not available for your Node version, native compilation may be required — on Windows use <a href="https://visualstudio.microsoft.com/downloads/">Build Tools for Visual Studio</a>; on Linux use <code>build-essential</code> (see Installation above).</p>
+<hr>
+<h2>Environment variables</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>WARDEN_API_PORT</code></td>
+<td><code>9615</code></td>
+<td>HTTP API port</td>
+</tr>
+<tr>
+<td><code>WARDEN_API_HOST</code></td>
+<td><code>127.0.0.1</code></td>
+<td>HTTP API bind address</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>License</h2>
+<p>MIT</p>
+</div>
+</body>
+</html>

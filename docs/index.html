@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Warden — Process Manager Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <link rel="stylesheet" href="assets/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+</head>
+<body>
+
+<!-- ── Header ───────────────────────────────────────────────────────────── -->
+<header class="header">
+  <button class="icon-btn menu-btn" id="menuBtn" title="Toggle navigation" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <a class="header-logo" href="#overview">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+    </svg>
+    Warden
+    <span class="logo-divider"></span>
+    <span class="logo-sub">Documentation</span>
+  </a>
+  <span class="version-badge">v1.0.2</span>
+  <div class="search-wrap">
+    <span class="search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+    <input type="text" id="search" placeholder="Search documentation…" autocomplete="off" />
+    <span class="search-kbd">/</span>
+  </div>
+  <nav class="header-nav">
+    <a href="https://github.com/RoshanGamage01/warden" target="_blank" rel="noopener" class="always-show">GitHub</a>
+    <a href="PM2-vs-Warden-Comparison.pdf" target="_blank">PM2 Comparison</a>
+    <div class="header-divider"></div>
+    <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">
+      <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </nav>
+</header>
+
+<!-- ── Sidebar overlay ───────────────────────────────────────────────────── -->
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ── Sidebar ───────────────────────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <nav>
+    <div class="nav-group">
+      <div class="nav-group-title">Getting Started</div>
+      <a class="nav-link" href="#overview">Overview</a>
+      <a class="nav-link" href="#installation">Installation</a>
+      <a class="nav-link" href="#quickstart">Quick Start</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">CLI Reference</div>
+      <a class="nav-link" href="#cli-start">start</a>
+      <a class="nav-link" href="#cli-stop">stop / restart / reload</a>
+      <a class="nav-link" href="#cli-list">list / describe / monit</a>
+      <a class="nav-link" href="#cli-logs">logs / flush</a>
+      <a class="nav-link" href="#cli-delete">delete / scale / reset</a>
+      <a class="nav-link" href="#cli-persist">save / resurrect</a>
+      <a class="nav-link" href="#cli-startup">startup / unstartup</a>
+      <a class="nav-link" href="#cli-daemon">kill / ping</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Configuration</div>
+      <a class="nav-link" href="#start-options">start options</a>
+      <a class="nav-link" href="#ecosystem">Ecosystem Config</a>
+      <a class="nav-link" href="#env-vars">Environment Variables</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Observability</div>
+      <a class="nav-link" href="#http-api">HTTP API</a>
+      <a class="nav-link" href="#prometheus">Prometheus / Grafana</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Internals</div>
+      <a class="nav-link" href="#architecture">Architecture</a>
+      <a class="nav-link" href="#state-machine">State Machine</a>
+      <a class="nav-link" href="#file-locations">File Locations</a>
+      <a class="nav-link" href="#windows">Windows</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">More</div>
+      <a class="nav-link" href="#development">Development</a>
+      <a class="nav-link" href="#defaults">Defaults</a>
+      <a class="nav-link" href="#pm2-comparison">PM2 Comparison</a>
+    </div>
+  </nav>
+</aside>
+
+<!-- ── Main ──────────────────────────────────────────────────────────────── -->
+<main class="main" id="mainContent">
+
+  <!-- Overview ─────────────────────────────────────────────────────────── -->
+  <div class="section" id="overview">
+    <div class="hero">
+      <div class="hero-meta">
+        <span>Self-hosted</span>
+        <span>MIT License</span>
+        <span>TypeScript</span>
+        <span>Node 18+</span>
+      </div>
+      <h1>Warden Process Manager</h1>
+      <p class="hero-sub">
+        A self-hosted, PM2-equivalent process manager for Node 18+. Supervise any process
+        — Node.js, Python, Ruby, binaries — with cluster mode, auto-restart, real-time logs,
+        built-in Prometheus metrics, and a SQLite telemetry store.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#installation">Get started</a>
+        <a class="btn btn-outline" href="https://github.com/RoshanGamage01/warden" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.395-.135-.345-.72-1.395-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a class="btn btn-outline" href="#http-api">HTTP API</a>
+      </div>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h4>Fork &amp; Cluster mode</h4>
+        <p>Manage any interpreter in fork mode, or Node.js apps in multi-instance cluster mode with port sharing.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Auto-restart &amp; backoff</h4>
+        <p>Crash detection with exponential backoff, max restarts, and a min-uptime stability gate.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Zero-downtime reload</h4>
+        <p>Rolling reload for cluster apps. Graceful restart for fork-mode processes.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Built-in Prometheus</h4>
+        <p>Native <code>/metrics</code> endpoint with per-process CPU, memory, restarts, and uptime gauges.</p>
+      </div>
+      <div class="feature-card">
+        <h4>SQLite time-series</h4>
+        <p>5-second sampling with a 24-hour rolling window — no external services required.</p>
+      </div>
+      <div class="feature-card">
+        <h4>HTTP REST API</h4>
+        <p>Query process state, time-series metrics, and aggregate summaries over HTTP.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Ecosystem config</h4>
+        <p>Declare multiple apps in a single <code>ecosystem.config.js</code> — PM2-compatible format.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Persistence</h4>
+        <p><code>warden save</code> / <code>warden resurrect</code> with systemd and launchd startup hooks.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Installation ─────────────────────────────────────────────────────── -->
+  <div class="section" id="installation">
+    <h2>Installation</h2>
+    <h3>From npm (recommended)</h3>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">npm install -g @roshan-gamage/warden</code></pre>
+    </div>
+
+    <h3>From source</h3>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">git clone https://github.com/RoshanGamage01/warden.git
+cd warden
+npm install
+npm run build
+npm link        # optional: make `warden` available globally</code></pre>
+    </div>
+    <p>The compiled binary is at <code>./dist/bin/warden.js</code> after build.</p>
+
+    <h3>Linux prerequisites</h3>
+    <div class="callout info">
+      <div class="callout-label">Note</div>
+      <div class="callout-body"><p>Warden depends on <code>better-sqlite3</code>, which requires native compilation. Prebuilt binaries are included for Node 20–24. If you see <code>not found: make</code>, install build tools:</p>
+      <div class="code-block">
+        <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+        <pre><code class="language-bash">sudo apt-get update && sudo apt-get install -y build-essential python3</code></pre>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- Quick Start ──────────────────────────────────────────────────────── -->
+  <div class="section" id="quickstart">
+    <h2>Quick Start</h2>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash"># Start a Node.js script
+warden start ./server.js --name api
+
+# Start a Python worker
+warden start ./worker.py --interpreter python3 --name worker
+
+# Run 4 cluster instances (Node.js, port-sharing)
+warden start ./app.js --instances 4 --name app
+
+# Start all apps from an ecosystem file
+warden start ecosystem.config.js
+
+# View process list
+warden list
+
+# Stream logs from all processes
+warden logs
+
+# Live terminal dashboard
+warden monit
+
+# Persist and enable on boot
+warden save
+warden startup</code></pre>
+    </div>
+  </div>
+
+  <!-- CLI: start ───────────────────────────────────────────────────────── -->
+  <div class="section" id="cli-start">
+    <h2>CLI — <code>warden start</code></h2>
+    <p>Starts a process or all apps declared in an ecosystem config file.</p>
+    <div class="code-block">
+      <div class="code-header"><span>syntax</span></div>
+      <pre><code class="language-bash">warden start &lt;script | ecosystem.config.js&gt; [options]</code></pre>
+    </div>
+
+    <h3>Script examples</h3>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash"># Node.js (default interpreter)
+warden start app.js --name api --instances 2
+
+# Python
+warden start predict.py --interpreter python3 --name ml
+
+# Binary
+warden start /usr/local/bin/my-service --interpreter none --name svc
+
+# Pass script arguments
+warden start worker.js --name worker -- --queue=email --concurrency=5
+
+# With environment variables
+warden start app.js -e NODE_ENV=production -e PORT=3000
+
+# With file watching
+warden start app.js --watch --name dev-api
+
+# With memory limit
+warden start app.js --max-memory-restart 512M
+
+# With cron restart
+warden start app.js --cron "0 3 * * *" --name nightly</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">Tip</div>
+      <div class="callout-body"><p>If you run <code>warden start</code> with an existing <code>--name</code>, the process config is updated and it is restarted in-place rather than creating a duplicate.</p></div>
+    </div>
+  </div>
+
+  <!-- CLI: stop/restart/reload ──────────────────────────────────────────── -->
+  <div class="section" id="cli-stop">
+    <h2>CLI — stop / restart / reload</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>warden stop &lt;id|name&gt;</code></td><td>Send SIGTERM, wait for graceful exit, then SIGKILL after <code>kill_timeout</code>. Status becomes <span class="status stopped">stopped</span>.</td></tr>
+          <tr><td><code>warden restart &lt;id|name&gt;</code></td><td>Hard stop then immediate restart. Crash counter is reset.</td></tr>
+          <tr><td><code>warden reload &lt;id|name&gt;</code></td><td><strong>Cluster:</strong> rolling reload — new workers come up before old ones exit. <strong>Fork:</strong> graceful restart (same as restart).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">warden stop api           # by name
+warden stop 0             # by warden_id
+warden restart api
+warden reload app         # zero-downtime for cluster apps</code></pre>
+    </div>
+    <div class="callout warn">
+      <div class="callout-label">Warning</div>
+      <div class="callout-body"><p><code>warden reload</code> achieves zero downtime only for <strong>cluster-mode</strong> processes. Fork-mode processes will experience a brief restart window.</p></div>
+    </div>
+  </div>
+
+  <!-- CLI: list/describe/monit ──────────────────────────────────────────── -->
+  <div class="section" id="cli-list">
+    <h2>CLI — list / describe / monit</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Alias</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>warden list</code></td><td><code>warden ls</code></td><td>Print process table with ID, name, mode, status, PID, CPU%, memory, uptime, restarts.</td></tr>
+          <tr><td><code>warden describe &lt;id|name&gt;</code></td><td><code>warden info</code></td><td>Full detail for one process including cluster workers and recent metric points.</td></tr>
+          <tr><td><code>warden monit</code></td><td>—</td><td>Auto-refreshing live dashboard in the terminal. Press <kbd>Ctrl+C</kbd> to quit.</td></tr>
+          <tr><td><code>warden ping</code></td><td>—</td><td>Check daemon liveness and print PID, version, socket path, API port.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">warden list
+# ┌────┬──────┬──────────┬────────┬─────┬──────┬────────┬─────────┬──────────┐
+# │ id │ name │ mode     │ status │ pid │ cpu  │ memory │ uptime  │ restarts │
+# ├────┼──────┼──────────┼────────┼─────┼──────┼────────┼─────────┼──────────┤
+# │ 0  │ api  │ cluster/2│ online │ 123 │ 1.2% │ 85 MB  │ 2h 14m  │ 0        │
+# └────┴──────┴──────────┴────────┴─────┴──────┴────────┴─────────┴──────────┘
+
+warden describe api
+warden monit</code></pre>
+    </div>
+  </div>
+
+  <!-- CLI: logs/flush ──────────────────────────────────────────────────── -->
+  <div class="section" id="cli-logs">
+    <h2>CLI — logs / flush</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>warden logs</code></td><td>Stream stdout+stderr from all processes. Press <kbd>Ctrl+C</kbd> to stop.</td></tr>
+          <tr><td><code>warden logs &lt;id|name&gt;</code></td><td>Stream logs for a specific process only.</td></tr>
+          <tr><td><code>warden logs -n &lt;N&gt; [id]</code></td><td>Show last N historical lines first, then stream live output. Default tail: 15 lines.</td></tr>
+          <tr><td><code>warden flush</code></td><td>Truncate all log files.</td></tr>
+          <tr><td><code>warden flush &lt;id|name&gt;</code></td><td>Truncate log files for one process.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">warden logs              # all processes, stream live
+warden logs api          # by name
+warden logs 0            # by id
+warden logs -n 100 api   # last 100 lines then stream
+warden flush             # clear all logs
+warden flush api         # clear logs for 'api' only</code></pre>
+    </div>
+    <p>Log lines are prefixed with <code>[name|id][out/err]</code> so you can distinguish processes and stream types.</p>
+    <p>Logs are written to <code>~/.warden/logs/&lt;name&gt;-&lt;id&gt;/out.log</code> and <code>err.log</code>. Files are rotated when they exceed <strong>10 MB</strong> (configurable via <code>max_log_size</code>), with up to 5 backup files kept.</p>
+  </div>
+
+  <!-- CLI: delete/scale/reset ──────────────────────────────────────────── -->
+  <div class="section" id="cli-delete">
+    <h2>CLI — delete / scale / reset</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>warden delete &lt;id|name&gt;</code></td><td>Stop and remove the process from the registry. Log files and metrics are also deleted. Alias: <code>del</code>.</td></tr>
+          <tr><td><code>warden scale &lt;id|name&gt; &lt;n&gt;</code></td><td>Scale a <strong>cluster-mode</strong> app to <em>n</em> workers at runtime. Adds or removes workers without downtime.</td></tr>
+          <tr><td><code>warden reset &lt;id|name&gt;</code></td><td>Reset the restart and unstable-restart counters to zero.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">warden delete old-service
+warden scale app 8        # scale to 8 cluster workers
+warden scale app 2        # scale back down
+warden reset api          # clear restart counters</code></pre>
+    </div>
+    <div class="callout info">
+      <div class="callout-label">Note</div>
+      <div class="callout-body"><p><code>warden scale</code> only works on cluster-mode processes (<code>exec_mode: 'cluster'</code>). Fork-mode processes are single-instance by design.</p></div>
+    </div>
+  </div>
+
+  <!-- CLI: save/resurrect ──────────────────────────────────────────────── -->
+  <div class="section" id="cli-persist">
+    <h2>CLI — save / resurrect</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>warden save</code></td><td>Serialize the current process list to <code>~/.warden/dump.json</code>.</td></tr>
+          <tr><td><code>warden resurrect</code></td><td>Read <code>dump.json</code> and restart any process that was <span class="status online">online</span> or <span class="status launching">launching</span> at save time.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">warden save        # call this after your setup is stable
+warden resurrect   # used by the startup service on boot</code></pre>
+    </div>
+    <p>The dump file is plain JSON — human-readable and version-controllable if needed.</p>
+  </div>
+
+  <!-- CLI: startup/unstartup ───────────────────────────────────────────── -->
+  <div class="section" id="cli-startup">
+    <h2>CLI — startup / unstartup</h2>
+    <p>Generates and installs a system-level service so Warden (and your processes) auto-start on boot.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>warden startup</code></td><td>Auto-detect platform and install service. Prints the required <code>sudo</code> commands.</td></tr>
+          <tr><td><code>warden startup systemd</code></td><td>Generate a <strong>systemd</strong> unit file (<code>/etc/systemd/system/warden.service</code>).</td></tr>
+          <tr><td><code>warden startup launchd</code></td><td>Generate a <strong>launchd</strong> plist (macOS: <code>~/Library/LaunchAgents/com.warden.daemon.plist</code>).</td></tr>
+          <tr><td><code>warden unstartup</code></td><td>Remove the installed startup service.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash"># Run once after your processes are configured and saved
+warden save
+warden startup
+# → follow the printed instructions (usually one sudo command)</code></pre>
+    </div>
+    <p>The startup service runs <code>warden resurrect</code> on boot, which brings back all processes that were saved as <span class="status online">online</span>.</p>
+  </div>
+
+  <!-- CLI: kill/ping ───────────────────────────────────────────────────── -->
+  <div class="section" id="cli-daemon">
+    <h2>CLI — kill / ping</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>warden kill</code></td><td>Send SIGTERM to the daemon, gracefully stopping all managed processes and shutting down the HTTP API.</td></tr>
+          <tr><td><code>warden ping</code></td><td>Connect to the daemon and print: PID, version, started_at, socket path, and API port.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">warden ping
+# Warden daemon · pid 12345 · v1.0.2
+# Socket  ~/.warden/daemon.sock
+# API     http://127.0.0.1:9615
+# Uptime  3h 41m
+
+warden kill
+# ✔ Daemon (pid 12345) sent SIGTERM</code></pre>
+    </div>
+
+    <h3>Daemon lifecycle</h3>
+    <p>The daemon is a long-running background process (god process) that persists after the CLI exits. It is auto-spawned the first time any <code>warden</code> command is run. The CLI communicates with it over a Unix domain socket using JSON-RPC with 4-byte length-prefixed frames.</p>
+  </div>
+
+  <!-- Start options ────────────────────────────────────────────────────── -->
+  <div class="section" id="start-options">
+    <h2>Start Options</h2>
+    <p>All options can also be set in an <a href="#ecosystem">ecosystem config file</a>.</p>
+
+    <div class="options-list">
+    <div class="option-row">
+      <div><div class="opt-name">-n, --name &lt;name&gt;</div><div class="opt-default">default: script filename</div></div>
+      <div class="opt-desc">Assign a human-readable name. Used in all commands instead of the numeric ID.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">-i, --instances &lt;n|max&gt;</div><div class="opt-default">default: 1</div></div>
+      <div class="opt-desc">Number of cluster workers. Use <code>"max"</code> to spawn one per logical CPU. Implies <code>--exec-mode cluster</code>.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--exec-mode &lt;mode&gt;</div><div class="opt-default">default: fork</div></div>
+      <div class="opt-desc"><code>fork</code> (any process, single instance) or <code>cluster</code> (Node.js, multiple workers sharing a port).</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--interpreter &lt;binary&gt;</div><div class="opt-default">default: auto-detected</div></div>
+      <div class="opt-desc">Interpreter binary. Examples: <code>python3</code>, <code>ruby</code>, <code>node</code>. Use <code>none</code> for compiled binaries.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--node-args &lt;args&gt;</div><div class="opt-default">default: none</div></div>
+      <div class="opt-desc">Extra arguments passed to the Node.js runtime itself (before the script). Example: <code>"--max-old-space-size=2048"</code>.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--cwd &lt;dir&gt;</div><div class="opt-default">default: process.cwd()</div></div>
+      <div class="opt-desc">Working directory for the spawned process.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">-e, --env &lt;KEY=VAL&gt;</div><div class="opt-default">repeatable</div></div>
+      <div class="opt-desc">Inject environment variables. Can be repeated: <code>-e PORT=3000 -e NODE_ENV=production</code>.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--watch</div><div class="opt-default">default: false</div></div>
+      <div class="opt-desc">Watch the working directory for file changes and restart the process. Uses chokidar under the hood.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--max-memory-restart &lt;size&gt;</div><div class="opt-default">default: disabled</div></div>
+      <div class="opt-desc">Auto-restart when RSS memory exceeds this threshold. Accepts <code>150M</code>, <code>1G</code>, or a plain number (bytes). Checked every 5 seconds.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--cron &lt;expr&gt;</div><div class="opt-default">default: disabled</div></div>
+      <div class="opt-desc">Schedule a restart via a cron expression. Example: <code>"0 3 * * *"</code> (daily at 3am). Uses croner.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--max-restarts &lt;n&gt;</div><div class="opt-default">default: 16</div></div>
+      <div class="opt-desc">Maximum number of crash restarts before the process is marked <span class="status errored">errored</span> and stopped.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--min-uptime &lt;time&gt;</div><div class="opt-default">default: 1s</div></div>
+      <div class="opt-desc">Minimum uptime needed to consider a restart "stable" and reset the crash counter. Accepts <code>1s</code>, <code>500ms</code>, or milliseconds.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--restart-delay &lt;ms&gt;</div><div class="opt-default">default: 0</div></div>
+      <div class="opt-desc">Base delay in milliseconds between restarts. Combined with exponential backoff, capped at 15 seconds.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--no-auto-restart</div><div class="opt-default">default: autorestart=true</div></div>
+      <div class="opt-desc">Disable crash-triggered auto-restart. The process is stopped after first exit.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--merge-logs</div><div class="opt-default">default: false</div></div>
+      <div class="opt-desc">Write stdout and stderr to the same <code>out.log</code> file instead of separate files.</div>
+    </div>
+    <div class="option-row">
+      <div><div class="opt-name">--kill-timeout &lt;ms&gt;</div><div class="opt-default">default: 1600</div></div>
+      <div class="opt-desc">Time in milliseconds to wait for graceful shutdown (SIGTERM) before sending SIGKILL.</div>
+    </div>
+    </div>
+  </div>
+
+  <!-- Ecosystem Config ──────────────────────────────────────────────────── -->
+  <div class="section" id="ecosystem">
+    <h2>Ecosystem Config</h2>
+    <p>Declare multiple applications in a single configuration file and start them all with one command.</p>
+
+    <h3>Supported file names</h3>
+    <p>Warden recognizes any of these as an ecosystem file:</p>
+    <ul>
+      <li><code>ecosystem.config.js</code></li>
+      <li><code>ecosystem.config.json</code></li>
+      <li><code>warden.config.js</code></li>
+      <li>Any file matching <code>*.config.js</code></li>
+    </ul>
+
+    <h3>Full example</h3>
+    <div class="code-block">
+      <div class="code-header"><span>ecosystem.config.js</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-javascript">module.exports = {
+  apps: [
+    // Node.js cluster app
+    {
+      name: 'api',
+      script: './src/api.js',
+      instances: 4,              // or 'max'
+      exec_mode: 'cluster',
+      env: {
+        NODE_ENV: 'production',
+        PORT: '3000',
+      },
+      max_memory_restart: '500M',
+      kill_timeout: 5000,
+    },
+
+    // File-watched development server
+    {
+      name: 'dev-server',
+      script: './src/server.js',
+      watch: ['./src'],
+      ignore_watch: ['node_modules', 'logs'],
+      env: { NODE_ENV: 'development' },
+    },
+
+    // Scheduled job
+    {
+      name: 'cleanup',
+      script: './jobs/cleanup.js',
+      cron_restart: '0 2 * * *',   // 2am daily
+      autorestart: false,           // run once per schedule
+    },
+
+    // Python ML worker
+    {
+      name: 'ml-model',
+      script: './predict.py',
+      interpreter: 'python3',
+      autorestart: true,
+      max_restarts: 5,
+      min_uptime: '5s',
+    },
+
+    // Binary service
+    {
+      name: 'sidecar',
+      script: '/usr/local/bin/sidecar',
+      interpreter: 'none',
+      args: ['--port', '8080'],
+      merge_logs: true,
+    },
+  ],
+};</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">warden start ecosystem.config.js</code></pre>
+    </div>
+
+    <h3>Config field reference</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Field</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>name</code></td><td>string</td><td>script filename</td><td>App name</td></tr>
+          <tr><td><code>script</code></td><td>string</td><td><em>required</em></td><td>Path to the entry point</td></tr>
+          <tr><td><code>args</code></td><td>string[]</td><td>[]</td><td>Arguments passed to the script</td></tr>
+          <tr><td><code>interpreter</code></td><td>string</td><td>auto</td><td>Interpreter binary (<code>node</code>, <code>python3</code>, <code>none</code>…)</td></tr>
+          <tr><td><code>interpreter_args</code></td><td>string[]</td><td>[]</td><td>Arguments to the interpreter itself</td></tr>
+          <tr><td><code>node_args</code></td><td>string[]</td><td>[]</td><td>Node.js runtime flags (prepended before script)</td></tr>
+          <tr><td><code>cwd</code></td><td>string</td><td>ecosystem file dir</td><td>Working directory</td></tr>
+          <tr><td><code>env</code></td><td>object</td><td>{}</td><td>Environment variables (merged with process.env)</td></tr>
+          <tr><td><code>instances</code></td><td>number|"max"</td><td>1</td><td>Cluster workers (implies cluster mode)</td></tr>
+          <tr><td><code>exec_mode</code></td><td>"fork"|"cluster"</td><td>"fork"</td><td>Execution mode</td></tr>
+          <tr><td><code>autorestart</code></td><td>boolean</td><td>true</td><td>Auto-restart on crash</td></tr>
+          <tr><td><code>max_restarts</code></td><td>number</td><td>16</td><td>Max crash restarts before errored</td></tr>
+          <tr><td><code>min_uptime</code></td><td>string|number</td><td>"1s"</td><td>Stability gate (resets crash counter)</td></tr>
+          <tr><td><code>restart_delay</code></td><td>number</td><td>0</td><td>Delay between restarts (ms, base for backoff)</td></tr>
+          <tr><td><code>kill_timeout</code></td><td>number</td><td>1600</td><td>SIGTERM timeout before SIGKILL (ms)</td></tr>
+          <tr><td><code>watch</code></td><td>boolean|string[]</td><td>false</td><td>Watch directories for changes</td></tr>
+          <tr><td><code>ignore_watch</code></td><td>string[]</td><td>[]</td><td>Paths to ignore when watching</td></tr>
+          <tr><td><code>cron_restart</code></td><td>string</td><td>""</td><td>Cron expression for scheduled restarts</td></tr>
+          <tr><td><code>max_memory_restart</code></td><td>string|number</td><td>disabled</td><td>Memory threshold (e.g. <code>"150M"</code>)</td></tr>
+          <tr><td><code>merge_logs</code></td><td>boolean</td><td>false</td><td>Merge stdout/stderr into one file</td></tr>
+          <tr><td><code>out_file</code></td><td>string</td><td>auto</td><td>Custom stdout log path</td></tr>
+          <tr><td><code>err_file</code></td><td>string</td><td>auto</td><td>Custom stderr log path</td></tr>
+          <tr><td><code>max_log_size</code></td><td>string|number</td><td>"10M"</td><td>Max log size before rotation</td></tr>
+          <tr><td><code>log_date_format</code></td><td>string</td><td>"YYYY-MM-DDTHH:mm:ss"</td><td>Prefix format for log lines (empty = no prefix)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Environment Variables ────────────────────────────────────────────── -->
+  <div class="section" id="env-vars">
+    <h2>Environment Variables</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Variable</th><th>Default</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>WARDEN_API_PORT</code></td><td><code>9615</code></td><td>HTTP API listen port</td></tr>
+          <tr><td><code>WARDEN_API_HOST</code></td><td><code>127.0.0.1</code></td><td>HTTP API bind address. Set to <code>0.0.0.0</code> to expose on all interfaces (caution on production).</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Managed processes also receive <code>WARDEN_ID</code> injected into their environment, so your app can detect it is running under Warden.</p>
+  </div>
+
+  <!-- HTTP API ──────────────────────────────────────────────────────────── -->
+  <div class="section" id="http-api">
+    <h2>HTTP API</h2>
+    <p>The daemon exposes a REST API on <code>http://127.0.0.1:9615</code> by default. Change the port with <code>WARDEN_API_PORT</code>.</p>
+
+    <h3>Endpoints</h3>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method GET">GET</span>
+        <span class="endpoint-path">/health</span>
+        <span class="endpoint-desc">Daemon liveness check</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Returns <code>{ "status": "ok", "pid": 12345 }</code></p>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method GET">GET</span>
+        <span class="endpoint-path">/processes</span>
+        <span class="endpoint-desc">All processes with latest metrics</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Returns an array of process objects including <code>warden_id</code>, <code>name</code>, <code>status</code>, <code>pid</code>, <code>exec_mode</code>, <code>instances</code>, <code>restarts</code>, <code>uptime</code>, <code>cpu</code>, <code>memory</code>, <code>script</code>, <code>cwd</code>, <code>out_log_path</code>, <code>err_log_path</code>, <code>instances_list</code>, <code>created_at</code>.</p>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method GET">GET</span>
+        <span class="endpoint-path">/processes/:id</span>
+        <span class="endpoint-desc">Single process + 120 recent metric points</span>
+      </div>
+      <div class="endpoint-body">
+        <p><code>:id</code> can be the numeric <code>warden_id</code> or the process <code>name</code>. Returns the full process object plus a <code>recent</code> array of <code>{ ts, cpu, memory }</code> points.</p>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method GET">GET</span>
+        <span class="endpoint-path">/processes/:id/metrics?range=1h</span>
+        <span class="endpoint-desc">Time-series data for a process</span>
+      </div>
+      <div class="endpoint-body">
+        <p><strong>Query params:</strong> <code>range</code> — time window. Supported: <code>1h</code> (default), <code>6h</code>, <code>24h</code>, <code>7d</code>. Also accepts raw seconds/minutes: <code>30m</code>, <code>3600s</code>.</p>
+        <p>Returns <code>{ warden_id, name, points: [{ ts, cpu, memory }, …] }</code>.</p>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method GET">GET</span>
+        <span class="endpoint-path">/summary</span>
+        <span class="endpoint-desc">Aggregate system-wide totals</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Returns <code>{ total, online, stopped, errored, launching, total_cpu_percent, total_memory_bytes }</code>.</p>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method GET">GET</span>
+        <span class="endpoint-path">/metrics</span>
+        <span class="endpoint-desc">Prometheus exposition format</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Returns all Warden gauges plus standard Node.js process metrics (via <code>prom-client</code>) in Prometheus text format.</p>
+      </div>
+    </div>
+
+    <h3>Example requests</h3>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">curl http://127.0.0.1:9615/health
+curl http://127.0.0.1:9615/processes
+curl http://127.0.0.1:9615/processes/api
+curl "http://127.0.0.1:9615/processes/api/metrics?range=6h"
+curl http://127.0.0.1:9615/summary</code></pre>
+    </div>
+  </div>
+
+  <!-- Prometheus ───────────────────────────────────────────────────────── -->
+  <div class="section" id="prometheus">
+    <h2>Prometheus / Grafana</h2>
+    <p>Warden exposes metrics in Prometheus text format at <code>GET /metrics</code>. Point your scrape config at the daemon API port.</p>
+
+    <h3>Prometheus scrape config</h3>
+    <div class="code-block">
+      <div class="code-header"><span>prometheus.yml</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-yaml">scrape_configs:
+  - job_name: warden
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['127.0.0.1:9615']</code></pre>
+    </div>
+
+    <h3>Available metrics</h3>
+    <div class="metrics-list">
+      <div class="metric-name"><span>warden_process_cpu_percent</span><span class="metric-label">{warden_id, name}</span></div>
+      <div class="metric-name"><span>warden_process_memory_bytes</span><span class="metric-label">{warden_id, name}</span></div>
+      <div class="metric-name"><span>warden_process_restarts_total</span><span class="metric-label">{warden_id, name}</span></div>
+      <div class="metric-name"><span>warden_process_uptime_seconds</span><span class="metric-label">{warden_id, name}</span></div>
+      <div class="metric-name"><span>warden_process_online</span><span class="metric-label">{warden_id, name, status}</span></div>
+    </div>
+    <p>Plus all standard <code>prom-client</code> Node.js process metrics (<code>process_cpu_seconds_total</code>, <code>process_resident_memory_bytes</code>, etc.).</p>
+
+    <h3>Grafana</h3>
+    <p>Add a Prometheus data source pointing to your server, then query any of the metrics above to build dashboards. Useful panel types:</p>
+    <ul>
+      <li><strong>Time series:</strong> <code>warden_process_cpu_percent</code>, <code>warden_process_memory_bytes</code></li>
+      <li><strong>Stat:</strong> <code>sum(warden_process_online)</code> — online process count</li>
+      <li><strong>Counter:</strong> <code>increase(warden_process_restarts_total[1h])</code> — restarts in the past hour</li>
+    </ul>
+  </div>
+
+  <!-- Architecture ─────────────────────────────────────────────────────── -->
+  <div class="section" id="architecture">
+    <h2>Architecture</h2>
+
+    <div class="arch-diagram">
+<span class="hl">CLI (warden)</span>
+  │  JSON-RPC over Unix domain socket
+  │  [4-byte BE uint32: body length][UTF-8 JSON payload]
+  ▼
+<span class="hl">Daemon (God process)</span>
+  ├─ <span class="acc">IPC Server</span>        — socket listener, RPC request router
+  ├─ <span class="acc">DaemonRouter</span>      — dispatches to all subsystems
+  ├─ <span class="acc">AppRegistry</span>       — registry of all managed apps + their state
+  │    ├─ <span class="dim">ProcessSupervisor</span>  — fork-mode: spawn, crash detect, backoff
+  │    └─ <span class="dim">ClusterManager</span>     — cluster/master.js → N workers
+  ├─ <span class="acc">WatchManager</span>      — chokidar fs.watch → restart on change
+  ├─ <span class="acc">CronScheduler</span>     — croner → scheduled restart
+  ├─ <span class="acc">MemoryMonitor</span>     — pidusage poll every 5s → restart if over limit
+  ├─ <span class="acc">MetricsSampler</span>    — pidusage every 5s → MetricsStore (SQLite)
+  ├─ <span class="acc">LogManager</span>        — per-process file writes, tail, watch, rotate
+  └─ <span class="acc">HTTP API (Fastify)</span>  — REST + Prometheus /metrics
+</div>
+
+    <h3>Daemon bootstrap sequence</h3>
+    <ol>
+      <li>CLI checks if <code>~/.warden/daemon.sock</code> is connectable.</li>
+      <li>If not found, CLI spawns the daemon detached: <code>node dist/daemon/index.js</code>.</li>
+      <li>CLI polls the socket every 100 ms (up to 5 seconds) for readiness.</li>
+      <li>Once ready, CLI connects and sends the JSON-RPC command.</li>
+      <li>After receiving the response the CLI exits; the daemon continues running.</li>
+    </ol>
+
+    <h3>IPC framing</h3>
+    <div class="code-block">
+      <div class="code-header"><span>wire format</span></div>
+      <pre><code class="language-text">┌──────────────────────┬───────────────────────────────────┐
+│ 4 bytes (BE uint32)  │  N bytes (UTF-8 JSON)             │
+│  body byte length    │  RpcRequest | RpcResponse | Event │
+└──────────────────────┴───────────────────────────────────┘</code></pre>
+    </div>
+    <p>Handles TCP fragmentation and multiple messages arriving in the same chunk.</p>
+  </div>
+
+  <!-- State Machine ────────────────────────────────────────────────────── -->
+  <div class="section" id="state-machine">
+    <h2>Process State Machine</h2>
+    <div class="arch-diagram">
+<span class="dim">[*]</span> ──► <span class="acc">launching</span> ──► <span class="hl">online</span> ──► <span class="dim">stopping</span> ──► <span class="dim">stopped</span>
+               │          │                        │
+               │          └──► <span class="acc">launching</span> (crash + autorestart)
+               │          └──► <span class="dim">errored</span>  (exceeded max_restarts)
+               └────────────────────────────────► <span class="dim">stopped</span> (stop called)
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><span class="status launching">launching</span></td><td>Process was just spawned; waiting for the <code>spawn</code> event from Node.js.</td></tr>
+          <tr><td><span class="status online">online</span></td><td>Process is running and PID is known. Stability timer is counting.</td></tr>
+          <tr><td><span class="status stopped">stopping</span></td><td>SIGTERM sent; waiting for graceful exit or kill_timeout.</td></tr>
+          <tr><td><span class="status stopped">stopped</span></td><td>Process exited cleanly (or was stopped intentionally).</td></tr>
+          <tr><td><span class="status errored">errored</span></td><td>Crashed more than <code>max_restarts</code> times. Warden stops trying.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- File Locations ────────────────────────────────────────────────────── -->
+  <div class="section" id="file-locations">
+    <h2>File Locations</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Path</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>~/.warden/</code></td><td>Warden home directory</td></tr>
+          <tr><td><code>~/.warden/daemon.sock</code></td><td>Unix domain socket for IPC (named pipe on Windows)</td></tr>
+          <tr><td><code>~/.warden/daemon.pid</code></td><td>Daemon PID file</td></tr>
+          <tr><td><code>~/.warden/dump.json</code></td><td>Saved process list (written by <code>warden save</code>)</td></tr>
+          <tr><td><code>~/.warden/metrics.db</code></td><td>SQLite database — 24h rolling time-series, 5s sampling</td></tr>
+          <tr><td><code>~/.warden/logs/&lt;name&gt;-&lt;id&gt;/out.log</code></td><td>Process stdout log</td></tr>
+          <tr><td><code>~/.warden/logs/&lt;name&gt;-&lt;id&gt;/err.log</code></td><td>Process stderr log</td></tr>
+          <tr><td><code>~/.warden/logs/&lt;name&gt;-&lt;id&gt;/out.log.1</code></td><td>Rotated log (up to 5 backups kept)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Startup service paths</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Platform</th><th>Path</th></tr></thead>
+        <tbody>
+          <tr><td>systemd (Linux)</td><td><code>/etc/systemd/system/warden.service</code></td></tr>
+          <tr><td>launchd (macOS)</td><td><code>~/Library/LaunchAgents/com.warden.daemon.plist</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Windows ──────────────────────────────────────────────────────────── -->
+  <div class="section" id="windows">
+    <h2>Windows Support</h2>
+    <p>Warden runs on Windows with one adaptation: the Unix domain socket is replaced with a named pipe:</p>
+    <div class="code-block">
+      <div class="code-header"><span>path</span></div>
+      <pre><code class="language-text">\\.\pipe\warden-daemon</code></pre>
+    </div>
+    <p>All other functionality is identical. The <code>pidusage</code> and <code>better-sqlite3</code> packages are both cross-platform.</p>
+    <div class="callout warn">
+      <div class="callout-label">Warning</div>
+      <div class="callout-body"><p>If prebuilt binaries are not available for your Node version, native compilation is required. On Windows, install <a href="https://visualstudio.microsoft.com/downloads/" target="_blank" rel="noopener">Build Tools for Visual Studio</a>. The <code>warden startup</code> command does not yet generate a Windows service; use Task Scheduler or a third-party service wrapper manually.</p></div>
+    </div>
+  </div>
+
+  <!-- Development ──────────────────────────────────────────────────────── -->
+  <div class="section" id="development">
+    <h2>Development</h2>
+    <h3>Build &amp; watch</h3>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">npm run build       # one-off build → dist/
+npm run dev         # watch mode (tsup --watch)
+npm run clean       # remove dist/</code></pre>
+    </div>
+
+    <h3>Tests</h3>
+    <div class="code-block">
+      <div class="code-header"><span>bash</span><button class="copy-btn">Copy</button></div>
+      <pre><code class="language-bash">npm test            # vitest run (unit + integration)
+npm run test:watch  # watch mode
+
+# Integration tests start/stop a real daemon; set this to skip them:
+SKIP_INTEGRATION=1 npm test</code></pre>
+    </div>
+
+    <h3>Project structure</h3>
+    <div class="code-block">
+      <div class="code-header"><span>tree</span></div>
+      <pre><code class="language-text">src/
+├── bin/warden.ts         CLI entry point
+├── cli/
+│   ├── index.ts          commander commands
+│   ├── daemon-bootstrap.ts  auto-start daemon
+│   └── output.ts         terminal rendering helpers
+├── daemon/
+│   ├── index.ts          daemon entry point
+│   └── router.ts         RPC method dispatcher
+├── core/
+│   ├── types.ts          shared TypeScript types
+│   ├── constants.ts      defaults & paths
+│   ├── app-registry.ts   process registry
+│   ├── supervisor.ts     fork-mode lifecycle
+│   ├── persistence.ts    save/resurrect
+│   └── utils.ts          helpers
+├── cluster/
+│   ├── manager.ts        cluster orchestrator
+│   ├── master.ts         cluster fork script
+│   └── worker-entry.ts   cluster worker bootstrap
+├── ipc/
+│   ├── server.ts         Unix socket server
+│   ├── client.ts         CLI-side socket client
+│   ├── protocol.ts       length-prefixed framing
+│   └── paths.ts          socket/pid paths
+├── api/server.ts         Fastify HTTP API
+├── metrics/
+│   ├── store.ts          SQLite time-series
+│   └── sampler.ts        pidusage polling loop
+├── logs/
+│   ├── manager.ts        file writes + tail + watch
+│   └── rotator.ts        size-based rotation
+├── watch/watcher.ts      chokidar integration
+├── cron/scheduler.ts     croner integration
+├── memory/monitor.ts     RSS threshold check
+└── startup/index.ts      systemd/launchd generator</code></pre>
+    </div>
+
+    <h3>Dependencies</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Package</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>better-sqlite3</code></td><td>Synchronous SQLite for time-series metrics</td></tr>
+          <tr><td><code>chalk</code></td><td>Terminal colors for CLI output</td></tr>
+          <tr><td><code>chokidar</code></td><td>Cross-platform file system watching</td></tr>
+          <tr><td><code>cli-table3</code></td><td>Process list table rendering</td></tr>
+          <tr><td><code>commander</code></td><td>CLI argument parsing</td></tr>
+          <tr><td><code>croner</code></td><td>Cron expression parsing &amp; scheduling</td></tr>
+          <tr><td><code>fastify</code></td><td>HTTP API server</td></tr>
+          <tr><td><code>pidusage</code></td><td>Cross-platform CPU/memory sampling</td></tr>
+          <tr><td><code>prom-client</code></td><td>Prometheus metrics exposition</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Defaults ─────────────────────────────────────────────────────────── -->
+  <div class="section" id="defaults">
+    <h2>Defaults Reference</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Constant</th><th>Value</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>DEFAULT_MAX_RESTARTS</code></td><td>16</td><td>Crash restarts before <span class="status errored">errored</span></td></tr>
+          <tr><td><code>DEFAULT_MIN_UPTIME</code></td><td>1 000 ms</td><td>Stability gate to reset crash counter</td></tr>
+          <tr><td><code>DEFAULT_RESTART_DELAY</code></td><td>0 ms</td><td>Base restart delay (backoff starts at 500 ms if 0)</td></tr>
+          <tr><td><code>DEFAULT_KILL_TIMEOUT</code></td><td>1 600 ms</td><td>SIGTERM → SIGKILL window</td></tr>
+          <tr><td><code>DEFAULT_MAX_LOG_SIZE</code></td><td>10 MB</td><td>Log file size before rotation</td></tr>
+          <tr><td><code>DEFAULT_API_PORT</code></td><td>9615</td><td>HTTP API port</td></tr>
+          <tr><td><code>DEFAULT_API_HOST</code></td><td>127.0.0.1</td><td>HTTP API bind address</td></tr>
+          <tr><td><code>METRICS_SAMPLE_INTERVAL</code></td><td>5 000 ms</td><td>CPU/memory sampling interval</td></tr>
+          <tr><td><code>METRICS_MAX_SAMPLES</code></td><td>17 280</td><td>Samples kept per process (24 h @ 5 s)</td></tr>
+          <tr><td><code>MAX_RESTART_BACKOFF</code></td><td>15 000 ms</td><td>Maximum backoff delay cap</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PM2 comparison ───────────────────────────────────────────────────── -->
+  <div class="section" id="pm2-comparison">
+    <h2>PM2 Comparison</h2>
+    <p>Warden has full feature parity with PM2 for day-to-day process management, while adding native Prometheus support and a built-in time-series metrics store.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Dimension</th><th>PM2</th><th>Warden</th></tr></thead>
+        <tbody>
+          <tr><td>Core process management</td><td><span class="check">Yes</span></td><td><span class="check">Yes</span></td></tr>
+          <tr><td>Cluster mode</td><td><span class="check">Yes</span></td><td><span class="check">Yes</span></td></tr>
+          <tr><td>Ecosystem config</td><td><span class="check">Yes</span></td><td><span class="check">Compatible</span></td></tr>
+          <tr><td>Built-in Prometheus</td><td><span class="partial">Via module</span></td><td><span class="check">Native</span></td></tr>
+          <tr><td>HTTP REST API</td><td><span class="partial">Limited</span></td><td><span class="check">Built-in</span></td></tr>
+          <tr><td>Local time-series DB</td><td><span class="cross">No</span></td><td><span class="check">SQLite</span></td></tr>
+          <tr><td>Cloud monitoring (paid)</td><td><span class="check">PM2 Plus</span></td><td><span class="cross">No</span></td></tr>
+          <tr><td>Deploy automation</td><td><span class="check">pm2 deploy</span></td><td><span class="cross">No</span></td></tr>
+          <tr><td>Module ecosystem</td><td><span class="check">Yes</span></td><td><span class="cross">No</span></td></tr>
+          <tr><td>License</td><td>AGPL-3.0</td><td>MIT</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top: 1rem">
+      <a class="btn btn-outline" href="PM2-vs-Warden-Comparison.pdf" target="_blank" rel="noopener">Full comparison PDF</a>
+    </div>
+  </div>
+
+</main>
+
+<!-- ── Scripts ───────────────────────────────────────────────────────────── -->
+<script>
+// ── Syntax highlighting ──────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  hljs.highlightAll();
+  initCopyButtons();
+  initTheme();
+  initSearch();
+  initActiveLink();
+  initMobileMenu();
+});
+
+// ── Copy buttons ─────────────────────────────────────────────────────────
+function initCopyButtons() {
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.code-block').querySelector('pre');
+      navigator.clipboard.writeText(pre.textContent.trim()).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  });
+}
+
+// ── Theme ────────────────────────────────────────────────────────────────
+function initTheme() {
+  const saved = localStorage.getItem('warden-theme');
+  const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  setTheme(saved || preferred);
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  });
+}
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeIconSun').style.display = t === 'dark' ? 'block' : 'none';
+  document.getElementById('themeIconMoon').style.display = t === 'dark' ? 'none' : 'block';
+  localStorage.setItem('warden-theme', t);
+}
+
+// ── Active nav link on scroll ─────────────────────────────────────────────
+function initActiveLink() {
+  const links = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('.section[id]');
+  const OFFSET = 80;
+
+  function update() {
+    let current = '';
+    sections.forEach(sec => {
+      if (window.scrollY >= sec.offsetTop - OFFSET) current = sec.id;
+    });
+    links.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+}
+
+// ── Search ────────────────────────────────────────────────────────────────
+function initSearch() {
+  const input = document.getElementById('search');
+  const sections = document.querySelectorAll('.section[id]');
+  const main = document.getElementById('mainContent');
+
+  let noResultsEl = null;
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) {
+      sections.forEach(s => s.classList.remove('hidden'));
+      if (noResultsEl) { noResultsEl.remove(); noResultsEl = null; }
+      return;
+    }
+
+    let visible = 0;
+    sections.forEach(sec => {
+      const text = sec.textContent.toLowerCase();
+      const match = text.includes(q);
+      sec.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+
+    if (noResultsEl) noResultsEl.remove();
+    if (visible === 0) {
+      noResultsEl = document.createElement('div');
+      noResultsEl.className = 'search-no-results';
+      noResultsEl.textContent = `No results for "${input.value}"`;
+      main.appendChild(noResultsEl);
+    } else {
+      noResultsEl = null;
+    }
+  });
+
+  // Clear on Escape
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      input.value = '';
+      input.dispatchEvent(new Event('input'));
+    }
+  });
+
+  // Keyboard shortcut: / to focus
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== input) {
+      e.preventDefault();
+      input.focus();
+    }
+  });
+}
+
+// ── Mobile menu ───────────────────────────────────────────────────────────
+function initMobileMenu() {
+  const btn = document.getElementById('menuBtn');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  btn.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+  });
+  // Close on nav link click (mobile)
+  sidebar.querySelectorAll('.nav-link').forEach(l => {
+    l.addEventListener('click', closeSidebar);
+  });
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').style.display = 'none';
+}
+</script>
+</body>
+</html>

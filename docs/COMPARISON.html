@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>PM2 vs Warden — Comparison</title>
+  <style>
+  @page { margin: 18mm 16mm; size: A4; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    color: #1a1a1a;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    font-size: 22pt;
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 0.35em;
+    margin-top: 0;
+    page-break-after: avoid;
+  }
+  h2 {
+    font-size: 14pt;
+    color: #1e40af;
+    margin-top: 1.4em;
+    border-bottom: 1px solid #dbeafe;
+    padding-bottom: 0.2em;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 11.5pt;
+    color: #334155;
+    margin-top: 1.1em;
+    page-break-after: avoid;
+  }
+  p, li { orphans: 3; widows: 3; }
+  a { color: #2563eb; text-decoration: none; }
+  code {
+    font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    font-size: 0.88em;
+    background: #f1f5f9;
+    padding: 0.12em 0.35em;
+    border-radius: 3px;
+  }
+  pre {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 0.85em 1em;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    page-break-inside: avoid;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8em 0 1.2em;
+    font-size: 9pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid #cbd5e1;
+    padding: 0.4em 0.55em;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #eff6ff;
+    font-weight: 600;
+    color: #1e3a8a;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+  hr {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 1.5em 0;
+  }
+  ul, ol { padding-left: 1.4em; }
+  li { margin: 0.25em 0; }
+  .doc-section {
+    page-break-before: always;
+  }
+  .doc-section:first-child {
+    page-break-before: auto;
+  }
+  .cover {
+    text-align: center;
+    padding: 3em 1em 2em;
+    page-break-after: always;
+  }
+  .cover h1 {
+    border: none;
+    font-size: 28pt;
+    margin-bottom: 0.2em;
+  }
+  .cover p {
+    color: #64748b;
+    font-size: 12pt;
+  }
+  .toc {
+    page-break-after: always;
+    margin-bottom: 2em;
+  }
+  .toc h2 { border: none; }
+  .toc ul { list-style: none; padding-left: 0; }
+  .toc li { margin: 0.5em 0; font-size: 11pt; }
+  .footer-note {
+    margin-top: 2em;
+    padding-top: 0.8em;
+    border-top: 1px solid #e2e8f0;
+    font-size: 8.5pt;
+    color: #64748b;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+  <div class=""><h1>PM2 vs Warden — Side-by-Side Comparison</h1>
+<p>Warden is a self-hosted process manager built as a PM2-equivalent for Node 18+. This document compares the two tools feature-by-feature so you can decide which fits your stack — or migrate from PM2 with minimal friction.</p>
+<hr>
+<h2>At a glance</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>PM2</strong></th>
+<th><strong>Warden</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Purpose</strong></td>
+<td>Production process manager for Node.js and beyond</td>
+<td>Self-hosted PM2 alternative with built-in telemetry</td>
+</tr>
+<tr>
+<td><strong>Language</strong></td>
+<td>JavaScript</td>
+<td>TypeScript</td>
+</tr>
+<tr>
+<td><strong>License</strong></td>
+<td>AGPL-3.0</td>
+<td>MIT</td>
+</tr>
+<tr>
+<td><strong>Node requirement</strong></td>
+<td>Node 12+</td>
+<td>Node 18+</td>
+</tr>
+<tr>
+<td><strong>Install</strong></td>
+<td><code>npm install -g pm2</code></td>
+<td><code>npm install -g @roshan-gamage/warden</code></td>
+</tr>
+<tr>
+<td><strong>CLI binary</strong></td>
+<td><code>pm2</code></td>
+<td><code>warden</code></td>
+</tr>
+<tr>
+<td><strong>Daemon IPC</strong></td>
+<td>Unix socket / TCP</td>
+<td>Unix domain socket (named pipe on Windows)</td>
+</tr>
+<tr>
+<td><strong>Config home</strong></td>
+<td><code>~/.pm2/</code></td>
+<td><code>~/.warden/</code></td>
+</tr>
+<tr>
+<td><strong>HTTP API</strong></td>
+<td>Optional (via PM2 Plus / custom)</td>
+<td>Built-in on <code>127.0.0.1:9615</code></td>
+</tr>
+<tr>
+<td><strong>Prometheus</strong></td>
+<td>Via third-party modules</td>
+<td>Native <code>/metrics</code> endpoint</td>
+</tr>
+<tr>
+<td><strong>Metrics storage</strong></td>
+<td>External (PM2 Plus cloud)</td>
+<td>Local SQLite (24-hour rolling window)</td>
+</tr>
+<tr>
+<td><strong>Cloud dashboard</strong></td>
+<td>PM2 Plus (paid)</td>
+<td>None — self-hosted only</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Feature comparison</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>PM2</th>
+<th>Warden</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Fork mode</strong> (any process)</td>
+<td>✅</td>
+<td>✅</td>
+<td>Node, Python, Ruby, binaries, shell scripts</td>
+</tr>
+<tr>
+<td><strong>Cluster mode</strong> (Node.js)</td>
+<td>✅</td>
+<td>✅</td>
+<td>Multi-instance, shared port</td>
+</tr>
+<tr>
+<td><strong>Auto-restart on crash</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>Exponential backoff in Warden</td>
+</tr>
+<tr>
+<td><strong>Max restarts / min uptime</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>Stability gate before resetting crash counter</td>
+</tr>
+<tr>
+<td><strong>Zero-downtime reload</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>Cluster: rolling reload; fork: graceful restart</td>
+</tr>
+<tr>
+<td><strong>Runtime scale</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td><code>pm2 scale</code> ↔ <code>warden scale</code></td>
+</tr>
+<tr>
+<td><strong>File watch → reload</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>chokidar-based in Warden</td>
+</tr>
+<tr>
+<td><strong>Cron restart</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>Scheduled restarts via cron expression</td>
+</tr>
+<tr>
+<td><strong>Memory limit restart</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>e.g. <code>--max-memory-restart 150M</code></td>
+</tr>
+<tr>
+<td><strong>Per-process logs</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>stdout / stderr to separate files</td>
+</tr>
+<tr>
+<td><strong>Log streaming</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td><code>pm2 logs</code> ↔ <code>warden logs</code></td>
+</tr>
+<tr>
+<td><strong>Log rotation</strong></td>
+<td>✅ (module)</td>
+<td>✅ (built-in)</td>
+<td>Warden rotates on size; PM2 uses <code>pm2-logrotate</code> module</td>
+</tr>
+<tr>
+<td><strong>Log flush</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td><code>pm2 flush</code> ↔ <code>warden flush</code></td>
+</tr>
+<tr>
+<td><strong>Save / resurrect</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td><code>dump.pm2</code> ↔ <code>dump.json</code></td>
+</tr>
+<tr>
+<td><strong>Startup hook</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>systemd, launchd; PM2 also supports Windows service via extra package</td>
+</tr>
+<tr>
+<td><strong>Ecosystem config</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td><code>ecosystem.config.js</code> — largely compatible field names</td>
+</tr>
+<tr>
+<td><strong>Live terminal dashboard</strong></td>
+<td>✅ <code>pm2 monit</code></td>
+<td>✅ <code>warden monit</code></td>
+<td>Auto-refreshing CPU / memory table</td>
+</tr>
+<tr>
+<td><strong>Process list / describe</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td><code>pm2 list</code> / <code>pm2 show</code> ↔ <code>warden list</code> / <code>warden describe</code></td>
+</tr>
+<tr>
+<td><strong>Reset restart counters</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td><code>pm2 reset</code> ↔ <code>warden reset</code></td>
+</tr>
+<tr>
+<td><strong>Graceful daemon shutdown</strong></td>
+<td>✅ <code>pm2 kill</code></td>
+<td>✅ <code>warden kill</code></td>
+<td>Stops all apps and the god process</td>
+</tr>
+<tr>
+<td><strong>Environment variables</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>CLI <code>-e KEY=VAL</code> or config <code>env</code> block</td>
+</tr>
+<tr>
+<td><strong>Custom interpreter</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td><code>--interpreter python3</code> etc.</td>
+</tr>
+<tr>
+<td><strong>Merge logs</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>Single combined stdout/stderr file</td>
+</tr>
+<tr>
+<td><strong>Kill timeout</strong></td>
+<td>✅</td>
+<td>✅</td>
+<td>Graceful shutdown before SIGKILL</td>
+</tr>
+<tr>
+<td><strong>HTTP REST API</strong></td>
+<td>⚠️ Limited</td>
+<td>✅ Built-in</td>
+<td>Warden: <code>/processes</code>, <code>/summary</code>, <code>/health</code></td>
+</tr>
+<tr>
+<td><strong>Prometheus metrics</strong></td>
+<td>⚠️ Via modules</td>
+<td>✅ Native</td>
+<td>Warden exposes <code>warden_process_*</code> gauges</td>
+</tr>
+<tr>
+<td><strong>Time-series metrics DB</strong></td>
+<td>❌</td>
+<td>✅</td>
+<td>SQLite, 5 s sampling, 24 h retention</td>
+</tr>
+<tr>
+<td><strong>PM2 Plus cloud monitoring</strong></td>
+<td>✅ (paid)</td>
+<td>❌</td>
+<td>Alerts, web UI, multi-server — PM2 only</td>
+</tr>
+<tr>
+<td><strong>Module ecosystem</strong></td>
+<td>✅</td>
+<td>❌</td>
+<td><code>pm2-logrotate</code>, <code>pm2-server-monit</code>, etc.</td>
+</tr>
+<tr>
+<td><strong>Deploy automation</strong></td>
+<td>✅ <code>pm2 deploy</code></td>
+<td>❌</td>
+<td>Git-based deployment workflow — PM2 only</td>
+</tr>
+<tr>
+<td><strong>Process attach / debug</strong></td>
+<td>✅ <code>pm2 attach</code></td>
+<td>❌</td>
+<td>Attach to process stdio — PM2 only</td>
+</tr>
+<tr>
+<td><strong>Custom triggers / hooks</strong></td>
+<td>✅ <code>pm2 trigger</code></td>
+<td>❌</td>
+<td>Event-driven custom actions — PM2 only</td>
+</tr>
+<tr>
+<td><strong>Docker official image</strong></td>
+<td>✅</td>
+<td>❌</td>
+<td>PM2 publishes maintained Docker images</td>
+</tr>
+<tr>
+<td><strong>Windows service</strong></td>
+<td>✅ (via <code>pm2-windows-service</code>)</td>
+<td>⚠️ Partial</td>
+<td>Warden runs on Windows; no native service installer</td>
+</tr>
+<tr>
+<td><strong>JSON machine output</strong></td>
+<td>✅ <code>pm2 jlist</code></td>
+<td>❌</td>
+<td>Scriptable JSON output — PM2 only</td>
+</tr>
+<tr>
+<td><strong>In-place PM2 upgrade</strong></td>
+<td>✅ <code>pm2 update</code></td>
+<td>❌</td>
+<td>Reinstall via npm for Warden</td>
+</tr>
+<tr>
+<td><strong>Multi-server fleet mgmt</strong></td>
+<td>✅ (PM2 Plus)</td>
+<td>❌</td>
+<td>Centralized fleet view — PM2 Plus only</td>
+</tr>
+</tbody></table>
+<p><strong>Legend:</strong> ✅ Supported · ⚠️ Partial or requires extra setup · ❌ Not supported</p>
+<hr>
+<h2>CLI command mapping</h2>
+<p>Most day-to-day PM2 commands have a direct Warden equivalent:</p>
+<table>
+<thead>
+<tr>
+<th>PM2</th>
+<th>Warden</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pm2 start app.js</code></td>
+<td><code>warden start app.js</code></td>
+<td>Start a process</td>
+</tr>
+<tr>
+<td><code>pm2 start ecosystem.config.js</code></td>
+<td><code>warden start ecosystem.config.js</code></td>
+<td>Start from ecosystem file</td>
+</tr>
+<tr>
+<td><code>pm2 stop &lt;id|name&gt;</code></td>
+<td><code>warden stop &lt;id|name&gt;</code></td>
+<td>Stop a process</td>
+</tr>
+<tr>
+<td><code>pm2 restart &lt;id|name&gt;</code></td>
+<td><code>warden restart &lt;id|name&gt;</code></td>
+<td>Hard restart</td>
+</tr>
+<tr>
+<td><code>pm2 reload &lt;id|name&gt;</code></td>
+<td><code>warden reload &lt;id|name&gt;</code></td>
+<td>Zero-downtime reload (cluster)</td>
+</tr>
+<tr>
+<td><code>pm2 delete &lt;id|name&gt;</code></td>
+<td><code>warden delete &lt;id|name&gt;</code></td>
+<td>Stop and remove from registry</td>
+</tr>
+<tr>
+<td><code>pm2 scale &lt;name&gt; &lt;n&gt;</code></td>
+<td><code>warden scale &lt;name&gt; &lt;n&gt;</code></td>
+<td>Scale cluster workers</td>
+</tr>
+<tr>
+<td><code>pm2 list</code> / <code>pm2 ls</code></td>
+<td><code>warden list</code> / <code>warden ls</code></td>
+<td>Process table</td>
+</tr>
+<tr>
+<td><code>pm2 show &lt;id|name&gt;</code></td>
+<td><code>warden describe &lt;id|name&gt;</code></td>
+<td>Detailed process info</td>
+</tr>
+<tr>
+<td><code>pm2 logs [id]</code></td>
+<td><code>warden logs [id]</code></td>
+<td>Stream logs</td>
+</tr>
+<tr>
+<td><code>pm2 flush [id]</code></td>
+<td><code>warden flush [id]</code></td>
+<td>Truncate log files</td>
+</tr>
+<tr>
+<td><code>pm2 monit</code></td>
+<td><code>warden monit</code></td>
+<td>Live dashboard</td>
+</tr>
+<tr>
+<td><code>pm2 save</code></td>
+<td><code>warden save</code></td>
+<td>Persist process list</td>
+</tr>
+<tr>
+<td><code>pm2 resurrect</code></td>
+<td><code>warden resurrect</code></td>
+<td>Restore saved processes</td>
+</tr>
+<tr>
+<td><code>pm2 startup</code></td>
+<td><code>warden startup</code></td>
+<td>Install boot-time service</td>
+</tr>
+<tr>
+<td><code>pm2 unstartup</code></td>
+<td><code>warden unstartup</code></td>
+<td>Remove boot-time service</td>
+</tr>
+<tr>
+<td><code>pm2 reset &lt;id|name&gt;</code></td>
+<td><code>warden reset &lt;id|name&gt;</code></td>
+<td>Reset restart counters</td>
+</tr>
+<tr>
+<td><code>pm2 kill</code></td>
+<td><code>warden kill</code></td>
+<td>Shut down daemon and all apps</td>
+</tr>
+<tr>
+<td>—</td>
+<td><code>warden ping</code></td>
+<td>Check daemon status (no PM2 equivalent)</td>
+</tr>
+</tbody></table>
+<h3>PM2 commands with no Warden equivalent</h3>
+<table>
+<thead>
+<tr>
+<th>PM2 command</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pm2 deploy</code></td>
+<td>Git-based deployment to remote servers</td>
+</tr>
+<tr>
+<td><code>pm2 attach</code></td>
+<td>Attach to a running process&#39;s stdio</td>
+</tr>
+<tr>
+<td><code>pm2 trigger</code></td>
+<td>Fire custom event hooks</td>
+</tr>
+<tr>
+<td><code>pm2 sendSignal</code></td>
+<td>Send arbitrary signals to a process</td>
+</tr>
+<tr>
+<td><code>pm2 jlist</code> / <code>pm2 prettylist</code></td>
+<td>JSON output for scripting</td>
+</tr>
+<tr>
+<td><code>pm2 env &lt;id&gt;</code></td>
+<td>Show resolved environment for a process</td>
+</tr>
+<tr>
+<td><code>pm2 update</code></td>
+<td>In-place upgrade of PM2 itself</td>
+</tr>
+<tr>
+<td><code>pm2 install &lt;module&gt;</code></td>
+<td>Install PM2 modules</td>
+</tr>
+</tbody></table>
+<hr>
+<h2><code>start</code> options comparison</h2>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>PM2</th>
+<th>Warden</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--name</code></td>
+<td>✅</td>
+<td>✅ <code>-n, --name</code></td>
+</tr>
+<tr>
+<td><code>--instances</code> / <code>-i</code></td>
+<td>✅</td>
+<td>✅ <code>-i, --instances</code> (supports <code>max</code>)</td>
+</tr>
+<tr>
+<td><code>--exec-mode</code></td>
+<td>✅</td>
+<td>✅ <code>--exec-mode fork|cluster</code></td>
+</tr>
+<tr>
+<td><code>--interpreter</code></td>
+<td>✅</td>
+<td>✅ <code>--interpreter</code></td>
+</tr>
+<tr>
+<td><code>--node-args</code></td>
+<td>✅</td>
+<td>✅ <code>--node-args</code></td>
+</tr>
+<tr>
+<td><code>--cwd</code></td>
+<td>✅</td>
+<td>✅ <code>--cwd</code></td>
+</tr>
+<tr>
+<td><code>--env</code> / <code>-e</code></td>
+<td>✅</td>
+<td>✅ <code>-e, --env KEY=VAL</code></td>
+</tr>
+<tr>
+<td><code>--watch</code></td>
+<td>✅</td>
+<td>✅ <code>--watch</code></td>
+</tr>
+<tr>
+<td><code>--max-memory-restart</code></td>
+<td>✅</td>
+<td>✅ <code>--max-memory-restart</code></td>
+</tr>
+<tr>
+<td><code>--cron</code> / <code>cron_restart</code></td>
+<td>✅</td>
+<td>✅ <code>--cron</code></td>
+</tr>
+<tr>
+<td><code>--max-restarts</code></td>
+<td>✅</td>
+<td>✅ <code>--max-restarts</code></td>
+</tr>
+<tr>
+<td><code>--min-uptime</code></td>
+<td>✅</td>
+<td>✅ <code>--min-uptime</code></td>
+</tr>
+<tr>
+<td><code>--restart-delay</code></td>
+<td>✅</td>
+<td>✅ <code>--restart-delay</code></td>
+</tr>
+<tr>
+<td><code>--no-autorestart</code></td>
+<td>✅</td>
+<td>✅ <code>--no-auto-restart</code></td>
+</tr>
+<tr>
+<td><code>--merge-logs</code></td>
+<td>✅</td>
+<td>✅ <code>--merge-logs</code></td>
+</tr>
+<tr>
+<td><code>--kill-timeout</code></td>
+<td>✅</td>
+<td>✅ <code>--kill-timeout</code></td>
+</tr>
+<tr>
+<td><code>--log-date-format</code></td>
+<td>✅</td>
+<td>⚠️ Config only</td>
+</tr>
+<tr>
+<td><code>--out</code> / <code>--error</code></td>
+<td>✅</td>
+<td>⚠️ Config only (<code>out_file</code>, <code>err_file</code>)</td>
+</tr>
+<tr>
+<td><code>--ignore-watch</code></td>
+<td>✅</td>
+<td>⚠️ Config only (<code>ignore_watch</code>)</td>
+</tr>
+<tr>
+<td><code>--wait-ready</code></td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>--listen-timeout</code></td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>--shutdown-with-message</code></td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Ecosystem config compatibility</h2>
+<p>Warden reads the same ecosystem file formats PM2 uses (<code>ecosystem.config.js</code>, <code>ecosystem.config.json</code>, and other <code>*.config.js</code> files). Field names follow PM2 conventions:</p>
+<pre><code class="language-js">// Works with both PM2 and Warden
+module.exports = {
+  apps: [
+    {
+      name: &#39;api&#39;,
+      script: &#39;./src/api.js&#39;,
+      instances: 2,
+      exec_mode: &#39;cluster&#39;,
+      env: { NODE_ENV: &#39;production&#39;, PORT: &#39;3000&#39; },
+      max_memory_restart: &#39;500M&#39;,
+      watch: [&#39;./src&#39;],
+      ignore_watch: [&#39;node_modules&#39;],
+      cron_restart: &#39;0 3 * * *&#39;,
+      interpreter: &#39;node&#39;,
+      max_restarts: 16,
+      min_uptime: &#39;1s&#39;,
+      autorestart: true,
+      merge_logs: true,
+      kill_timeout: 5000,
+    },
+  ],
+};
+</code></pre>
+<p><strong>Migration tip:</strong> If you already have a PM2 ecosystem file, you can usually point Warden at it unchanged:</p>
+<pre><code class="language-bash"># Before
+pm2 start ecosystem.config.js
+
+# After
+warden start ecosystem.config.js
+</code></pre>
+<hr>
+<h2>File locations</h2>
+<table>
+<thead>
+<tr>
+<th>Purpose</th>
+<th>PM2</th>
+<th>Warden</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Home directory</td>
+<td><code>~/.pm2/</code></td>
+<td><code>~/.warden/</code></td>
+</tr>
+<tr>
+<td>Saved process list</td>
+<td><code>~/.pm2/dump.pm2</code></td>
+<td><code>~/.warden/dump.json</code></td>
+</tr>
+<tr>
+<td>Daemon PID</td>
+<td><code>~/.pm2/pm2.pid</code></td>
+<td><code>~/.warden/daemon.pid</code></td>
+</tr>
+<tr>
+<td>IPC socket</td>
+<td><code>~/.pm2/rpc.sock</code> / <code>pub.sock</code></td>
+<td><code>~/.warden/daemon.sock</code></td>
+</tr>
+<tr>
+<td>Logs</td>
+<td><code>~/.pm2/logs/</code></td>
+<td><code>~/.warden/logs/&lt;name&gt;-&lt;id&gt;/</code></td>
+</tr>
+<tr>
+<td>Metrics</td>
+<td>External (PM2 Plus)</td>
+<td><code>~/.warden/metrics.db</code> (SQLite)</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Observability</h2>
+<h3>PM2</h3>
+<ul>
+<li><strong>Terminal:</strong> <code>pm2 monit</code>, <code>pm2 list</code> with inline CPU/memory</li>
+<li><strong>Cloud:</strong> PM2 Plus — web dashboard, alerts, multi-server (paid subscription)</li>
+<li><strong>Prometheus:</strong> Requires community modules or custom integration</li>
+<li><strong>REST API:</strong> Limited; full API tied to PM2 Plus</li>
+</ul>
+<h3>Warden</h3>
+<ul>
+<li><strong>Terminal:</strong> <code>warden monit</code>, <code>warden list</code>, <code>warden describe</code></li>
+<li><strong>HTTP API:</strong> Built-in on port <code>9615</code> — <code>/processes</code>, <code>/processes/:id/metrics?range=1h</code>, <code>/summary</code>, <code>/health</code></li>
+<li><strong>Prometheus:</strong> Native <code>/metrics</code> endpoint with <code>warden_process_*</code> gauges</li>
+<li><strong>Time-series:</strong> SQLite database with 5-second sampling and 24-hour retention</li>
+</ul>
+<p>Example Prometheus scrape config for Warden:</p>
+<pre><code class="language-yaml">scrape_configs:
+  - job_name: warden
+    static_configs:
+      - targets: [&#39;127.0.0.1:9615&#39;]
+</code></pre>
+<hr>
+<h2>Architecture</h2>
+<pre><code>PM2                              Warden
+────                             ──────
+CLI (pm2)                        CLI (warden)
+  │                                │  JSON-RPC over Unix socket
+  ▼                                ▼
+God Daemon                       God Daemon
+  ├─ Process fork/cluster          ├─ ProcessSupervisor (fork)
+  ├─ File watch                    ├─ ClusterManager (cluster)
+  ├─ Log management                ├─ WatchManager (chokidar)
+  ├─ Cron restart                  ├─ CronScheduler (croner)
+  ├─ Memory monitor                ├─ MemoryMonitor (pidusage)
+  └─ PM2 Plus (optional cloud)     ├─ MetricsSampler → SQLite
+                                   ├─ LogRotator
+                                   └─ HTTP API (Fastify + prom-client)
+</code></pre>
+<p>Both use a long-running <strong>god daemon</strong> that outlives the CLI. The CLI connects, sends commands, and exits — managed processes keep running.</p>
+<hr>
+<h2>When to choose PM2</h2>
+<ul>
+<li>You need <strong>PM2 Plus</strong> cloud monitoring, alerts, or multi-server fleet management</li>
+<li>You rely on <strong><code>pm2 deploy</code></strong> for Git-based deployment workflows</li>
+<li>You use the <strong>PM2 module ecosystem</strong> (<code>pm2-logrotate</code>, custom modules)</li>
+<li>You need <strong><code>pm2 attach</code></strong>, <strong><code>pm2 trigger</code></strong>, or <strong>JSON output</strong> (<code>pm2 jlist</code>) for automation</li>
+<li>You want an <strong>official Docker image</strong> with PM2 pre-installed</li>
+<li>You need <strong>Windows service</strong> integration out of the box</li>
+</ul>
+<h2>When to choose Warden</h2>
+<ul>
+<li>You want a <strong>fully self-hosted</strong> solution with no cloud dependency or subscription</li>
+<li>You need <strong>native Prometheus</strong> metrics and a <strong>built-in HTTP API</strong> without extra modules</li>
+<li>You want <strong>local time-series metrics</strong> (SQLite) for debugging and short-term analysis</li>
+<li>You prefer an <strong>MIT-licensed</strong>, TypeScript codebase you can fork and extend</li>
+<li>You&#39;re running a <strong>single server or small fleet</strong> and terminal + Prometheus/Grafana is enough</li>
+<li>You&#39;re migrating from PM2 and your workflow is: start → logs → monit → save → startup</li>
+</ul>
+<hr>
+<h2>Quick migration guide (PM2 → Warden)</h2>
+<pre><code class="language-bash"># 1. Save your current PM2 process list (for reference)
+pm2 save
+pm2 jlist &gt; pm2-backup.json
+
+# 2. Stop PM2 (optional — they can coexist on different sockets)
+pm2 kill
+
+# 3. Install Warden
+npm install -g @roshan-gamage/warden
+
+# 4. Start your apps with the same ecosystem file
+warden start ecosystem.config.js
+
+# 5. Persist and enable boot startup
+warden save
+warden startup    # follow printed instructions for systemd / launchd
+
+# 6. Verify
+warden list
+warden ping
+curl http://127.0.0.1:9615/health
+</code></pre>
+<p>If you start processes individually instead of via an ecosystem file, recreate them with equivalent <code>warden start</code> flags (see CLI mapping above), then <code>warden save</code>.</p>
+<hr>
+<h2>Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Winner</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Core process management (fork, cluster, restart, logs)</td>
+<td><strong>Tie</strong> — feature parity for everyday use</td>
+</tr>
+<tr>
+<td>Ecosystem config compatibility</td>
+<td><strong>Tie</strong> — same file format</td>
+</tr>
+<tr>
+<td>Built-in observability (API, Prometheus, metrics DB)</td>
+<td><strong>Warden</strong></td>
+</tr>
+<tr>
+<td>Cloud monitoring &amp; fleet management</td>
+<td><strong>PM2</strong> (PM2 Plus)</td>
+</tr>
+<tr>
+<td>Module / plugin ecosystem</td>
+<td><strong>PM2</strong></td>
+</tr>
+<tr>
+<td>Deployment automation</td>
+<td><strong>PM2</strong> (<code>pm2 deploy</code>)</td>
+</tr>
+<tr>
+<td>Licensing &amp; self-hosting</td>
+<td><strong>Warden</strong> (MIT, no cloud lock-in)</td>
+</tr>
+<tr>
+<td>Maturity &amp; community</td>
+<td><strong>PM2</strong> — larger user base, longer track record</td>
+</tr>
+</tbody></table>
+<p>Warden covers the PM2 workflow most teams actually use — start, supervise, log, monitor, persist, and boot — while adding first-class telemetry. PM2 remains the better choice when you need cloud dashboards, deployment tooling, or the module ecosystem.</p>
+</div>
+</body>
+</html>
