@@ -28,15 +28,24 @@ Manages **any** process (Node.js, Python, Ruby, binaries, shell scripts) with th
 ## Installation
 
 ```bash
-# From the workspace root:
+# From npm (global CLI):
+npm install -g @roshan-gamage/warden
+
+# From source:
+git clone https://github.com/RoshanGamage01/warden.git
+cd warden
 npm install
 npm run build
-
-# Link globally (optional):
-npm link
+npm link   # optional: link `warden` globally
 ```
 
 The `warden` binary is at `./dist/bin/warden.js` after build.
+
+**Linux (Ubuntu/Debian):** Prebuilt binaries are included for Node 20–24. If install still compiles from source and fails with `not found: make`, install build tools first:
+
+```bash
+sudo apt-get update && sudo apt-get install -y build-essential python3
+```
 
 ---
 
@@ -294,7 +303,7 @@ SKIP_INTEGRATION=1 npm test
 
 ## Windows support
 
-On Windows, the Unix domain socket path is replaced with a named pipe (`\\.\pipe\warden-daemon`). All other functionality is identical. The `pidusage` and `better-sqlite3` packages are cross-platform; `better-sqlite3` may require the [Build Tools for Visual Studio](https://visualstudio.microsoft.com/downloads/) if prebuilt binaries are not available for your Node version.
+On Windows, the Unix domain socket path is replaced with a named pipe (`\\.\pipe\warden-daemon`). All other functionality is identical. The `pidusage` and `better-sqlite3` packages are cross-platform. If prebuilt binaries are not available for your Node version, native compilation may be required — on Windows use [Build Tools for Visual Studio](https://visualstudio.microsoft.com/downloads/); on Linux use `build-essential` (see Installation above).
 
 ---
 

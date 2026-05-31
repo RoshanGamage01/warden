@@ -1,5 +1,8 @@
 {
-  "name": "@internal/warden",
+  "name": "@roshan-gamage/warden",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "1.0.0",
   "description": "Self-hosted PM2 alternative: supervise any process (Node, Python, binaries) with cluster mode, auto-restart, logs, metrics, Prometheus, and a CLI dashboard.",
   "main": "dist/index.js",
@@ -7,14 +10,28 @@
   "bin": {
     "warden": "./dist/bin/warden.js"
   },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": ["process-manager", "warden", "daemon", "pm2", "supervisor", "prometheus", "cluster", "nodejs"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RoshanGamage01/warden.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RoshanGamage01/warden/issues"
+  },
+  "homepage": "https://github.com/RoshanGamage01/warden#readme",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"

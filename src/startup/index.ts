@@ -20,7 +20,7 @@ function detectPlatform(): Platform {
 function resolveWardenBin(): string {
   const candidates = [
     path.resolve(__dirname, '../../bin/warden.js'),
-    path.resolve(process.execPath, '../../lib/node_modules/@internal/warden/dist/bin/warden.js'),
+    path.resolve(process.execPath, '../../lib/node_modules/@roshan-gamage/warden/dist/bin/warden.js'),
   ];
   for (const c of candidates) {
     if (fs.existsSync(c)) return c;

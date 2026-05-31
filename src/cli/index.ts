@@ -397,11 +397,7 @@ export function createProgram(): Command {
     .command('ping')
     .description('Check if the daemon is running and show its info')
     .action(wrap(async () => {
-      const client = await getClient(false).catch(() => null);
-      if (!client) {
-        console.log(chalk.yellow('Warden daemon is not running.'));
-        return;
-      }
+      const client = await getClient();
       const info = await client.call<{
         pid: number; version: string; started_at: number;
         socket_path: string; api_port: number;
