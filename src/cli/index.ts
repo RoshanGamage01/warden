@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import os from 'os';
+import path from 'path';
 import { getClient } from './daemon-bootstrap.js';
 import {
   printProcessTable,
@@ -53,7 +54,8 @@ function buildConfig(script: string, opts: Record<string, unknown>): AppConfig {
   if (opts['name']) config.name = opts['name'] as string;
   if (opts['interpreter']) config.interpreter = opts['interpreter'] as string;
   if (opts['nodeArgs']) config.node_args = (opts['nodeArgs'] as string).split(' ').filter(Boolean);
-  if (opts['cwd']) config.cwd = opts['cwd'] as string;
+  // Resolve relative script paths from the CLI's cwd, not the daemon's.
+  config.cwd = (opts['cwd'] as string | undefined) ?? process.cwd();
   if (opts['env']) {
     const envPairs = (opts['env'] as string[]);
     config.env = {};
@@ -134,10 +136,16 @@ export function createProgram(): Command {
       // Ecosystem configs use known filenames (*.config.js, ecosystem.config.js, …).
       // Regular scripts like scheduler.js are started directly.
       if (isEcosystemConfigFile(scriptOrEco)) {
+        const ecoPath = path.resolve(scriptOrEco);
+        const ecoDir = path.dirname(ecoPath);
         const eco = loadEcosystem(scriptOrEco);
         for (const appConfig of eco.apps) {
+          const config = {
+            ...appConfig,
+            cwd: appConfig.cwd ?? ecoDir,
+          };
           const entry = await client.call<{ name: string; warden_id: number; status: string }>(
-            'start', appConfig
+            'start', config
           );
           printSuccess(`${entry.name} started (id ${entry.warden_id})`);
         }

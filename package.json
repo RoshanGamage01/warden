@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Self-hosted PM2 alternative: supervise any process (Node, Python, binaries) with cluster mode, auto-restart, logs, metrics, Prometheus, and a CLI dashboard.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

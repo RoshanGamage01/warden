@@ -57,4 +57,13 @@ describe('normaliseConfig', () => {
     const entry = normaliseConfig({ script: '/tmp/script.py' }, 0);
     expect(entry.interpreter).toBe('python3');
   });
+
+  it('resolves relative script against provided cwd', () => {
+    const entry = normaliseConfig(
+      { script: 'index.js', cwd: '/home/server-ready/server/dist' },
+      0
+    );
+    expect(entry.script).toBe('/home/server-ready/server/dist/index.js');
+    expect(entry.cwd).toBe('/home/server-ready/server/dist');
+  });
 });
