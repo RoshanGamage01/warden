@@ -1,0 +1,40 @@
+{
+  "name": "@internal/warden",
+  "version": "1.0.0",
+  "description": "Self-hosted PM2 alternative: supervise any process (Node, Python, binaries) with cluster mode, auto-restart, logs, metrics, Prometheus, and a CLI dashboard.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "warden": "./dist/bin/warden.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist"
+  },
+  "keywords": ["process-manager", "warden", "daemon", "pm2", "supervisor", "prometheus", "cluster", "nodejs"],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.6.0",
+    "chalk": "^4.1.2",
+    "chokidar": "^3.6.0",
+    "cli-table3": "^0.6.5",
+    "commander": "^12.1.0",
+    "croner": "^8.1.1",
+    "fastify": "^4.28.1",
+    "pidusage": "^3.0.2",
+    "prom-client": "^15.1.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^20.14.9",
+    "tsup": "^8.2.4",
+    "typescript": "^5.5.3",
+    "vitest": "^1.6.0"
+  }
+}
