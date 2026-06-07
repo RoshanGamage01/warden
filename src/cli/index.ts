@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import os from 'os';
 import path from 'path';
 import { getClient } from './daemon-bootstrap.js';
+import type { RpcClient } from '../ipc/client.js';
 import {
   printProcessTable,
   printDescribe,
@@ -46,6 +47,12 @@ async function runMonit(): Promise<void> {
     client.disconnect();
     process.exit(0);
   });
+}
+
+async function showProcessTable(client: RpcClient): Promise<void> {
+  const entries = await client.call<ListRow[]>('list');
+  console.log();
+  printProcessTable(entries);
 }
 
 // ── Build app config from CLI options ──────────────────────────────────────
@@ -159,6 +166,7 @@ export function createProgram(): Command {
         printSuccess(`${entry.name} started (id ${entry.warden_id})`);
       }
 
+      await showProcessTable(client);
       client.disconnect();
     }));
 
@@ -171,6 +179,7 @@ export function createProgram(): Command {
       const client = await getClient();
       await client.call('stop', { id });
       printSuccess(`${id} stopped`);
+      await showProcessTable(client);
       client.disconnect();
     }));
 
@@ -183,6 +192,7 @@ export function createProgram(): Command {
       const client = await getClient();
       await client.call('restart', { id });
       printSuccess(`${id} restarted`);
+      await showProcessTable(client);
       client.disconnect();
     }));
 
