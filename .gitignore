@@ -5,3 +5,4 @@ dist/
 ~/.warden/
 .DS_Store
 coverage/
+config.bat

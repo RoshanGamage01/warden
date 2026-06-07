@@ -17,14 +17,23 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "node init && tsup",
+    "dev": "node init && tsup --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "rm -rf dist",
     "prepublishOnly": "npm run build && npm test"
   },
-  "keywords": ["process-manager", "warden", "daemon", "pm2", "supervisor", "prometheus", "cluster", "nodejs"],
+  "keywords": [
+    "process-manager",
+    "warden",
+    "daemon",
+    "pm2",
+    "supervisor",
+    "prometheus",
+    "cluster",
+    "nodejs"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RoshanGamage01/warden.git"
@@ -45,6 +54,7 @@
     "commander": "^12.1.0",
     "croner": "^8.1.1",
     "fastify": "^4.28.1",
+    "node-fetch": "^3.3.2",
     "pidusage": "^3.0.2",
     "prom-client": "^15.1.3"
   },
