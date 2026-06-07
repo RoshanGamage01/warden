@@ -3,12 +3,13 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "Self-hosted PM2 alternative: supervise any process (Node, Python, binaries) with cluster mode, auto-restart, logs, metrics, Prometheus, and a CLI dashboard.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "warden": "./dist/bin/warden.js"
+    "warden": "./dist/bin/warden.js",
+    "wdn": "./dist/bin/warden.js"
   },
   "files": [
     "dist",

@@ -1,7 +1,12 @@
-# Warden — Internal Process Manager
+# Warden — Self-Hosted Process Manager
+
+[![npm version](https://img.shields.io/npm/v/@roshan-gamage/warden.svg)](https://www.npmjs.com/package/@roshan-gamage/warden)
+[![license](https://img.shields.io/npm/l/@roshan-gamage/warden.svg)](https://github.com/RoshanGamage01/warden/blob/main/LICENSE)
 
 A self-hosted, PM2-equivalent process manager built in TypeScript for Node 18+.  
 Manages **any** process (Node.js, Python, Ruby, binaries, shell scripts) with the full PM2 feature set and first-class telemetry.
+
+**CLI:** `warden` — short alias: `wdn` (same commands, e.g. `wdn list`, `wdn start`, `wdn monit`).
 
 ## Features
 
@@ -28,18 +33,31 @@ Manages **any** process (Node.js, Python, Ruby, binaries, shell scripts) with th
 ## Installation
 
 ```bash
-# From npm (global CLI):
+# Global CLI (recommended):
 npm install -g @roshan-gamage/warden
+
+# Update an existing install:
+npm install -g @roshan-gamage/warden@latest
+warden kill && warden ping   # restart daemon after upgrade
 
 # From source:
 git clone https://github.com/RoshanGamage01/warden.git
 cd warden
 npm install
 npm run build
-npm link   # optional: link `warden` globally
+npm link   # optional: link `warden` and `wdn` globally
 ```
 
-The `warden` binary is at `./dist/bin/warden.js` after build.
+After install, two global commands are available:
+
+| Command | Description |
+|---------|-------------|
+| `warden` | Primary CLI binary |
+| `wdn` | Short alias — identical to `warden` |
+
+From source, both point to `./dist/bin/warden.js` after build.
+
+**Relative script paths** are resolved from the directory where you run `warden start` (not the daemon's working directory). To override, pass `--cwd <dir>` or use an absolute script path.
 
 **Linux (Ubuntu/Debian):** Prebuilt binaries are included for Node 20–24. If install still compiles from source and fails with `not found: make`, install build tools first:
 
@@ -47,11 +65,22 @@ The `warden` binary is at `./dist/bin/warden.js` after build.
 sudo apt-get update && sudo apt-get install -y build-essential python3
 ```
 
+**npm publish (maintainers):** Scoped packages require an npm account that owns the `@roshan-gamage` scope (matching username or org membership). Publish with:
+
+```bash
+npm run build
+npm test
+npm publish --access public
+```
+
 ---
 
 ## Quick start
 
 ```bash
+# Run from your app's directory so relative paths resolve correctly
+cd /path/to/your-app
+
 # Start any Node script directly
 warden start ./server.js --name api
 
@@ -74,11 +103,17 @@ warden logs 0         # by id
 
 # Live dashboard
 warden monit
+
+# Same commands work with the short alias
+wdn list
+wdn start ./server.js --name api
 ```
 
 ---
 
 ## CLI Reference
+
+All commands below work with **`warden`** or **`wdn`**.
 
 ### Process management
 
@@ -242,7 +277,7 @@ Available metrics:
 ## Architecture overview
 
 ```
-CLI (warden)
+CLI (warden / wdn)
   │  JSON-RPC over Unix domain socket
   ▼
 Daemon (God process)
@@ -313,6 +348,22 @@ On Windows, the Unix domain socket path is replaced with a named pipe (`\\.\pipe
 |----------|---------|-------------|
 | `WARDEN_API_PORT` | `9615` | HTTP API port |
 | `WARDEN_API_HOST` | `127.0.0.1` | HTTP API bind address |
+
+---
+
+## Changelog
+
+### 1.0.4
+- README: install/update guide, `wdn` alias docs, publish notes, and changelog
+
+### 1.0.3
+- Added `wdn` CLI alias alongside `warden`
+
+### 1.0.2
+- Fixed relative script paths resolving against the daemon cwd instead of the CLI cwd on Linux
+
+### 1.0.1
+- Upgraded `better-sqlite3` for Node 24 prebuilt binary support on Linux
 
 ---
 

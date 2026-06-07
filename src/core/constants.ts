@@ -1,7 +1,7 @@
 import path from 'path';
 import os from 'os';
 
-export const VERSION = '1.0.0';
+export const VERSION = '1.0.4';
 
 // ─── Directories ───────────────────────────────────────────────────────────
 

@@ -4,6 +4,7 @@ import path from 'path';
 import net from 'net';
 import { RpcClient, tryConnect } from '../ipc/client.js';
 import { WARDEN_SOCKET_PATH, WARDEN_PID_FILE } from '../core/constants.js';
+import { getCliName } from './cli-name.js';
 
 const DAEMON_SCRIPT = path.resolve(__dirname, '../daemon/index.js');
 const WAIT_ATTEMPTS = 50;  // 50 × 100ms = 5s
@@ -20,7 +21,7 @@ export async function getClient(autospawn = true): Promise<RpcClient> {
 
   if (!autospawn) {
     throw new Error(
-      'Warden daemon is not running. Start it with: warden start <script>'
+      `Warden daemon is not running. Start it with: ${getCliName()} start <script>`
     );
   }
 

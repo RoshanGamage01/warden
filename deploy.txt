@@ -1,0 +1,5 @@
+run build
+npm test
+npm publish --access public
+
+npm install -g @roshan-gamage/warden@latest

@@ -14,6 +14,7 @@ import {
 import { isEcosystemConfigFile, loadEcosystem } from '../config/loader.js';
 import { AppConfig, LogEvent } from '../core/types.js';
 import { VERSION } from '../core/constants.js';
+import { getCliName } from './cli-name.js';
 
 // ── Monit dashboard ─────────────────────────────────────────────────────────
 
@@ -103,7 +104,7 @@ export function createProgram(): Command {
   const program = new Command();
 
   program
-    .name('warden')
+    .name(getCliName())
     .description('Warden — Internal process manager')
     .version(VERSION, '-v, --version')
     .allowUnknownOption(false);
